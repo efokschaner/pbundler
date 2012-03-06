@@ -102,7 +102,19 @@ class PBundle:
             del os.environ['PYTHONHOME']
         os.environ['VIRTUAL_ENV'] = self.virtualenvpath
         os.environ['PATH'] = os.path.join(self.virtualenvpath, "bin") + ':' + os.environ['PATH']
+        for key, value in self.envfile().iteritems():
+            os.environ[key] = value
         os.execvp(command[0], command)
+
+    def envfile(self):
+        ef = {}
+        try:
+            execfile(os.path.join(self.workpath, "environment.py"), {}, ef)
+        except IOError, e:
+            pass # ignore non-existence of environment.json
+        except Exception, e:
+            print 'environment.py: %s' % e
+        return ef
 
     def _call_program(self, command, verbose=True):
         cmdline = ' '.join(command)
