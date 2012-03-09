@@ -1,12 +1,16 @@
 #!/usr/bin/env python
+import os
+import sys
 import json
 import hashlib
-import os, sys, fnmatch
+import fnmatch
 import pip.req
 from pip.exceptions import InstallationError
 import time
 
-pip.version_control() # initialize vcs support
+# initialize vcs support
+pip.version_control()
+
 
 class PBFile:
     @staticmethod
@@ -22,20 +26,26 @@ class PBFile:
         if os.path.exists(os.path.join(root, fn)):
             return root
         up = os.path.abspath(os.path.join(root, '..'))
-        if up == root: return None
+        if up == root:
+            return None
         return PBFile.find_upwards(fn, up)
+
 
 REQUIREMENTS = 'requirements.txt'
 REQUIREMENTS_LAST = 'requirements.last'
 
+
 class PBBasepathNotFound(Exception):
     pass
+
 
 class FakeOptionsClass(object):
     def __hasattr__(self, name):
         return True
-    def __getattr__(self,name):
+
+    def __getattr__(self, name):
         return None
+
 
 class PBundle:
     def __init__(self, basepath):
@@ -57,14 +67,16 @@ class PBundle:
 
     def ensure_virtualenv(self):
         if not os.path.exists(os.path.join(self.virtualenvpath, 'bin')):
-            os.system("virtualenv --no-site-packages " + self.virtualenvpath + " 2>&1")
-
+            os.system("virtualenv --no-site-packages " +
+                      self.virtualenvpath + " 2>&1")
 
     def _parse_requirements(self, filename):
         reqs = {}
         try:
             try:
-                for req in pip.req.parse_requirements(os.path.join(self.basepath, filename), options=FakeOptionsClass()):
+                for req in pip.req.parse_requirements(
+                        os.path.join(self.basepath, filename),
+                        options=FakeOptionsClass()):
                     reqs[req.name] = req
             except InstallationError, e:
                 pass
@@ -73,17 +85,18 @@ class PBundle:
             traceback.print_exc(e)
         return reqs
 
-
     @property
     def requirements(self):
         if not self._requirements:
-            self._requirements = self._parse_requirements(REQUIREMENTS)
+            self._requirements = \
+                self._parse_requirements(REQUIREMENTS)
         return self._requirements
 
     @property
     def requirements_last(self):
         if not self._requirements_last:
-            self._requirements_last = self._parse_requirements(REQUIREMENTS_LAST)
+            self._requirements_last = \
+                self._parse_requirements(REQUIREMENTS_LAST)
         return self._requirements_last
 
     def requirements_changed(self):
@@ -91,7 +104,8 @@ class PBundle:
 
     def save_requirements(self):
         with open(os.path.join(self.workpath, REQUIREMENTS_LAST), "w") as f:
-            f.write("#pbundle %s, written %s\n" % (REQUIREMENTS_LAST, time.time()))
+            f.write("#pbundle %s, written %s\n" %
+                    (REQUIREMENTS_LAST, time.time()))
             for r in self.requirements.values():
                 f.write("%s\n" % r)
 
@@ -101,7 +115,8 @@ class PBundle:
         if 'PYTHONHOME' in os.environ:
             del os.environ['PYTHONHOME']
         os.environ['VIRTUAL_ENV'] = self.virtualenvpath
-        os.environ['PATH'] = os.path.join(self.virtualenvpath, "bin") + ':' + os.environ['PATH']
+        os.environ['PATH'] = (os.path.join(self.virtualenvpath, "bin") +
+                              ':' + os.environ['PATH'])
         for key, value in self.envfile().iteritems():
             os.environ[key] = value
         os.execvp(command[0], command)
@@ -111,30 +126,56 @@ class PBundle:
         try:
             execfile(os.path.join(self.workpath, "environment.py"), {}, ef)
         except IOError, e:
-            pass # ignore non-existence of environment.json
+            # ignore non-existence of environment.json
+            pass
         except Exception, e:
             print 'environment.py: %s' % e
         return ef
 
     def _call_program(self, command, verbose=True):
         cmdline = ' '.join(command)
-        if verbose: print "Running \"%s\" ..." % (cmdline,)
-        os.system(". " + self.virtualenvpath + "/bin/activate; PBUNDLE_REQ='" + self.basepath + "'; " + cmdline)
+        if verbose:
+            print "Running \"%s\" ..." % (cmdline,)
+        os.system(". " + self.virtualenvpath + "/bin/activate; PBUNDLE_REQ='" +
+                  self.basepath + "'; " + cmdline)
 
     def uninstall_removed(self):
-        to_remove = set(self.requirements_last.keys()) - set(self.requirements.keys())
+        to_remove = set(self.requirements_last.keys()) - \
+            set(self.requirements.keys())
         for p in to_remove:
             self._call_program(["pip", "uninstall", p])
 
     def install(self):
-        self._call_program(["pip", "install", "-r", os.path.join(self.basepath, REQUIREMENTS)])
+        self._call_program(["pip", "install", "-r",
+                            os.path.join(self.basepath, REQUIREMENTS)])
 
     def upgrade(self):
-        self._call_program(["pip", "install", "--upgrade", "-r", os.path.join(self.basepath, REQUIREMENTS)])
+        self._call_program(["pip", "install", "--upgrade", "-r",
+                            os.path.join(self.basepath, REQUIREMENTS)])
+
 
 class PBCliError(Exception):
     def __init__(self, message):
         Exception.__init__(self, message)
+
+
+USAGE = """
+pbundle                  Copyright 2012 Christian Hofstaedtler
+pbundle Usage:
+  pbundle [install]    - Run pip, if needed (also uninstalls removed
+                         requirements)
+  pbundle upgrade      - Run pip, with --upgrade
+  pbundle init         - Create empty requirements.txt
+  pbundle run program  - Run "program" in activated virtualenv
+  pbundle py args      - Run activated python with args
+
+To auto-enable your scripts, use "#!/usr/bin/env pbundle-py" as the
+shebang line.
+
+Website:      https://github.com/zeha/pbundler
+Report bugs:  https://github.com/zeha/pbundler/issues
+"""
+
 
 class PBCli():
     def __init__(self):
@@ -145,7 +186,9 @@ class PBCli():
         if not self._pb:
             basepath = PBundle.find_basepath()
             if not basepath:
-                raise PBCliError("Could not find requirements.txt in path from here to root.")
+                message = ("Could not find requirements.txt " +
+                           "in path from here to root.")
+                raise PBCliError(message)
             self._pb = PBundle(basepath)
         return self._pb
 
@@ -154,8 +197,10 @@ class PBCli():
         command = "install"
         if args:
             command = args.pop(0)
+        if command in ['--help', '-h']:
+            command = 'help'
         if 'cmd_' + command in PBCli.__dict__:
-            return PBCli.__dict__['cmd_'+command](self, args)
+            return PBCli.__dict__['cmd_' + command](self, args)
         else:
             raise PBCliError("Unknown command \"%s\"" % (command,))
 
@@ -170,23 +215,14 @@ class PBCli():
             print "  ", e
             return 120
 
-    def print_usage(self):
-        print "pbundle                - Copyright 2012 Christian Hofstaedtler"
-        print "pbundle Usage:"
-        print "  pbundle [install]    - Run pip, if needed (also uninstalls removed"
-        print "                         requirements"
-        print "  pbundle upgrade      - Run pip, with --upgrade"
-        print "  pbundle init         - Create empty requirements.txt"
-        print "  pbundle run program  - Run \"program\" in activated virtualenv"
-        print "  pbundle py args      - Run activated python with args"
-
     def cmd_help(self, args):
-        self.print_usage()
+        print USAGE.strip()
 
     def cmd_init(self, args):
         # can't use PBundle here
         if os.path.exists(REQUIREMENTS):
-            raise PBCliError("Cowardly refusing, as %s already exists here." % (REQUIREMENTS,))
+            raise PBCliError("Cowardly refusing, as %s already exists here." %
+                             (REQUIREMENTS,))
         with open(REQUIREMENTS, "w") as f:
             f.write("# pbundle MAGIC\n")
             f.write("#pbundle>=0\n")
