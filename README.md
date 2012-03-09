@@ -16,7 +16,7 @@ Howto
 
 To run commands with the activated virtualenv:
 
-    pbundle run echo "I am activated. virtualenv: \$VIRTUAL_ENV"
+    pbundle run bash -c 'echo "I am activated. virtualenv: $VIRTUAL_ENV"'
 
 
 Or, for python programs:
