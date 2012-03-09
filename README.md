@@ -63,6 +63,14 @@ start-unicorn.sh:
     PYTHONPATH=/srv/app/wsgi exec pbundle run gunicorn -w 5 -b 127.0.0.1:4000 -n flaskrprod flaskr:app
 
 
+Custom environment variables
+----------------------------
+
+If you need to set custom ENV variables for the executed commands in your local copy, do this:
+
+    echo "DJANGO_SETTINGS_MODULE='mysite.settings'" >> .pbundle/environment.py
+
+
 TODO
 ----
 
