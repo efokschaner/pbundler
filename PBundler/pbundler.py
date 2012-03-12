@@ -4,9 +4,11 @@ import sys
 import json
 import hashlib
 import fnmatch
+import time
+
 import pip.req
 from pip.exceptions import InstallationError
-import time
+import virtualenv
 
 # initialize vcs support
 pip.version_control()
@@ -68,6 +70,45 @@ class PBundle:
     def ensure_virtualenv(self):
         if not os.path.exists(os.path.join(self.virtualenvpath, 'bin')):
             os.system("virtualenv " + self.virtualenvpath + " 2>&1")
+
+    def ensure_relocatable(self):
+        self.make_scripts_relocatable()
+        virtualenv.fixup_pth_and_egg_link(self.virtualenvpath)
+
+    def make_scripts_relocatable(self):
+        shebang_pfx = '#!'
+        new_shebang = '#!/usr/bin/env pbundle-py'
+        if sys.platform == 'win32':
+            bin_suffix = 'Scripts'
+        else:
+            bin_suffix = 'bin'
+        bin_dir = os.path.join(self.virtualenvpath, bin_suffix)
+        for filename in os.listdir(bin_dir):
+            filename = os.path.join(bin_dir, filename)
+            if not os.path.isfile(filename):
+                # ignore subdirs, e.g. .svn ones.
+                continue
+            f = open(filename, 'rb')
+            lines = f.readlines()
+            f.close()
+            if not lines:
+                # Empty.
+                continue
+            line0 = lines[0].strip()
+            if not line0.startswith(shebang_pfx):
+                # Probably a binary.
+                continue
+            if not "python" in line0 and not "pbundle" in line0:
+                # Has shebang prefix, but not a python script.
+                # Better ignore it.
+                continue
+            if line0 == new_shebang:
+                # Already patched, skip rewrite.
+                continue
+            lines = [new_shebang+'\n'] + lines[1:]
+            f = open(filename, 'wb')
+            f.writelines(lines)
+            f.close()
 
     def _parse_requirements(self, filename):
         reqs = {}
@@ -147,10 +188,12 @@ class PBundle:
     def install(self):
         self._call_program(["pip", "install", "-r",
                             os.path.join(self.basepath, REQUIREMENTS)])
+        self.ensure_relocatable()
 
     def upgrade(self):
         self._call_program(["pip", "install", "--upgrade", "-r",
                             os.path.join(self.basepath, REQUIREMENTS)])
+        self.ensure_relocatable()
 
 
 class PBCliError(Exception):
