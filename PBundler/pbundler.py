@@ -253,7 +253,7 @@ class PBCli():
             print "E: " + str(e)
             return 1
         except Exception, e:
-            print "E: Internal error in pbundler:\n"
+            print "E: Internal error in pbundler:"
             print "  ", e
             return 120
 
