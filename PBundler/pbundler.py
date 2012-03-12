@@ -67,8 +67,7 @@ class PBundle:
 
     def ensure_virtualenv(self):
         if not os.path.exists(os.path.join(self.virtualenvpath, 'bin')):
-            os.system("virtualenv --no-site-packages " +
-                      self.virtualenvpath + " 2>&1")
+            os.system("virtualenv " + self.virtualenvpath + " 2>&1")
 
     def _parse_requirements(self, filename):
         reqs = {}
