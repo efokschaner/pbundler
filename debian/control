@@ -6,7 +6,7 @@ Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper 
 Standards-Version: 3.9.3
 Homepage: https://github.com/zeha/pbundler
 
-Package: python-pbundler
+Package: pbundler
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}, python-pip, python-virtualenv, python-setuptools (>= 0.6.24), python-pkg-resources
 Description: Bundler for Python
