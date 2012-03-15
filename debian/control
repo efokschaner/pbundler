@@ -9,8 +9,12 @@ Homepage: https://github.com/zeha/pbundler
 Package: pbundler
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}, python-pip, python-virtualenv, python-setuptools (>= 0.6.24), python-pkg-resources
-Description: Bundler for Python
- Simplifies virtualenv and pip usage.
+Description: Bundler for Python - Dependency Management
+ Automatically manages Python application's dependencies from
+ development to deployment on top of virtualenv.
  .
- Mostly useful for developers of applications, based or not based on
- Python application frameworks.
+ Independent of the various Python application frameworks, but should
+ work with all of them.
+ .
+ The Python Bundler is inspired by Bundler for Ruby (AKA gembundler),
+ which is available as the "bundler" package.

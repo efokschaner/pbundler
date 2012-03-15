@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 setup(
     name="pbundler",
-    version="0.0.2",
+    version="0.0.3",
     packages=find_packages(),
     zip_safe=False,
     install_requires=['virtualenv>=1.7', 'distribute', 'pip'],
@@ -21,7 +21,7 @@ setup(
     author_email="ch--pypi@zeha.at",
     description="Bundler for Python",
     license="MIT",
-    keywords="bundler bundle pbundler pbundle",
+    keywords="bundler bundle pbundler pbundle dependency dependencies management virtualenv pip packages",
     url="http://github.com/zeha/pbundler/",
     download_url="https://github.com/zeha/pbundler/downloads",
 )

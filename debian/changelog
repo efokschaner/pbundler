@@ -1,5 +1,5 @@
-pbundler (0.0.2) UNRELEASED; urgency=low
+pbundler (0.0.3) unstable; urgency=low
 
-  * Initial release
+  * Initial upload (Closes: #664122)
 
- -- Christian Hofstaedtler <christian@hofstaedtler.name>  Tue, 13 Mar 2012 19:24:42 +0100
+ -- Christian Hofstaedtler <christian@hofstaedtler.name>  Mon, 19 Mar 2012 12:25:34 +0100
