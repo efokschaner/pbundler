@@ -1,10 +1,11 @@
-from PBundler import *
+from PBundler import PBCli
+import sys
 
 
 def pbcli():
-    return PBCli().run(sys.argv)
+    sys.exit(PBCli().run(sys.argv))
 
 
 def pbpy():
     argv = [sys.argv[0], "py"] + sys.argv[1:]
-    return PBCli().run(argv)
+    sys.exit(PBCli().run(argv))

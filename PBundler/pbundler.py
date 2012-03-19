@@ -159,7 +159,11 @@ class PBundle:
                               ':' + os.environ['PATH'])
         for key, value in self.envfile().iteritems():
             os.environ[key] = value
-        os.execvp(command[0], command)
+        try:
+            os.execvp(command[0], command)
+        except OSError, e:
+            print e
+            return 127
 
     def envfile(self):
         ef = {}
@@ -281,7 +285,7 @@ class PBCli():
         self.pb.upgrade()
 
     def cmd_run(self, args):
-        self.pb.run(args, verbose=False)
+        return self.pb.run(args, verbose=False)
 
     def cmd_py(self, args):
-        self.pb.run(["python"] + args, verbose=False)
+        return self.pb.run(["python"] + args, verbose=False)
