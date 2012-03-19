@@ -5,6 +5,7 @@ Priority: optional
 Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 7.4.3), python-pip
 Standards-Version: 3.9.3
 Homepage: https://github.com/zeha/pbundler
+DM-Upload-Allowed: yes
 
 Package: pbundler
 Architecture: all
