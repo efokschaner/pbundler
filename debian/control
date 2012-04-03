@@ -9,7 +9,7 @@ DM-Upload-Allowed: yes
 
 Package: pbundler
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-pip, python-virtualenv, python-setuptools (>= 0.6.24), python-pkg-resources
+Depends: ${misc:Depends}, ${python:Depends}, python-pip, python-virtualenv (>= 1.17), python-setuptools (>= 0.6.24), python-pkg-resources
 Description: Bundler for Python - Dependency Management
  Automatically manages Python application's dependencies from
  development to deployment on top of virtualenv.
