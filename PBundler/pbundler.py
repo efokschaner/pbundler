@@ -20,7 +20,7 @@ class PBFile:
         try:
             with open(os.path.join(path, filename), 'r') as f:
                 return f.read()
-        except Exception, e:
+        except Exception as e:
             return None
 
     @staticmethod
@@ -118,9 +118,9 @@ class PBundle:
                         os.path.join(self.basepath, filename),
                         options=FakeOptionsClass()):
                     reqs[req.name] = req
-            except InstallationError, e:
+            except InstallationError as e:
                 pass
-        except Exception, e:
+        except Exception as e:
             import traceback
             traceback.print_exc(e)
         return reqs
@@ -161,7 +161,7 @@ class PBundle:
             os.environ[key] = value
         try:
             os.execvp(command[0], command)
-        except OSError, e:
+        except OSError as e:
             print e
             return 127
 
@@ -169,10 +169,10 @@ class PBundle:
         ef = {}
         try:
             execfile(os.path.join(self.workpath, "environment.py"), {}, ef)
-        except IOError, e:
+        except IOError as e:
             # ignore non-existence of environment.json
             pass
-        except Exception, e:
+        except Exception as e:
             print 'environment.py: %s' % e
         return ef
 
@@ -258,10 +258,10 @@ class PBCli():
     def run(self, argv):
         try:
             return self.handle_args(argv)
-        except PBCliError, e:
+        except PBCliError as e:
             print "E: " + str(e)
             return 1
-        except Exception, e:
+        except Exception as e:
             print "E: Internal error in pbundler:"
             print "  ", e
             return 120
