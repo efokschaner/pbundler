@@ -176,18 +176,23 @@ class PBundle:
             print 'environment.py: %s' % e
         return ef
 
-    def _call_program(self, command, verbose=True):
+    def _call_program(self, command, verbose=True, raise_on_error=True):
         cmdline = ' '.join(command)
         if verbose:
             print "Running \"%s\" ..." % (cmdline,)
-        os.system(". " + self.virtualenvpath + "/bin/activate; PBUNDLE_REQ='" +
-                  self.basepath + "'; " + cmdline)
+        rc = os.system(". " + self.virtualenvpath + "/bin/activate; PBUNDLE_REQ='" +
+                       self.basepath + "'; " + cmdline)
+        # Note: rc is not the real return code, but checking == 0 should be
+        # good enough.
+        if rc != 0 and raise_on_error:
+            raise PBCliError("External command %r failed with exit code %d" % (cmdline, (rc&0xFF00)>>8))
 
     def uninstall_removed(self):
         to_remove = set(self.requirements_last.keys()) - \
             set(self.requirements.keys())
+
         for p in to_remove:
-            self._call_program(["pip", "uninstall", p])
+            self._call_program(["pip", "uninstall", p], raise_on_error=False)
 
     def install(self):
         self._call_program(["pip", "install", "-r",
