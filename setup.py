@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 setup(
     name="pbundler",
-    version="0.0.3",
+    version="0.0.4",
     packages=find_packages(),
     zip_safe=False,
     install_requires=['virtualenv>=1.7', 'distribute', 'pip'],
