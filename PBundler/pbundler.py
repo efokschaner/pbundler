@@ -10,8 +10,9 @@ import pip.req
 from pip.exceptions import InstallationError
 import virtualenv
 
-# initialize vcs support
-pip.version_control()
+# initialize vcs support for pip <= 1.1
+if 'version_control' in pip.__dict__:
+    pip.version_control()
 
 
 class PBFile:
