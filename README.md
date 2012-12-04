@@ -43,6 +43,14 @@ Instructions you can give your users:
     pbundle
 
 
+If you rather like pip, and you're sure your users already have pip:
+
+    git clone git://github.com/you/yourproject.git
+    pip install pbundler
+    pbundle
+
+
+
 Making python scripts automatically use pbundle py
 --------------------------------------------------
 
