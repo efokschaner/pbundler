@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import traceback
+import subprocess
 
 import pip.req
 from pip.exceptions import InstallationError
@@ -154,17 +155,8 @@ class PBundle:
                 f.write("%s\n" % r)
 
     def run(self, command, verbose=True):
-        if verbose:
-            print "Running \"%s\" ..." % (' '.join(command),)
-        if 'PYTHONHOME' in os.environ:
-            del os.environ['PYTHONHOME']
-        os.environ['VIRTUAL_ENV'] = self.virtualenvpath
-        os.environ['PATH'] = (os.path.join(self.virtualenvpath, "bin") +
-                              ':' + os.environ['PATH'])
-        for key, value in self.envfile().iteritems():
-            os.environ[key] = value
         try:
-            os.execvp(command[0], command)
+            return self._call_program(command, verbose=verbose, honor_envfile=True, raise_on_error=False)
         except OSError as e:
             print e
             return 127
@@ -180,16 +172,33 @@ class PBundle:
             print 'environment.py: %s' % e
         return ef
 
-    def _call_program(self, command, verbose=True, raise_on_error=True):
-        cmdline = ' '.join(command)
+    def _call_program(self, command, verbose=True, raise_on_error=True, cwd=None, honor_envfile=False):
         if verbose:
-            print "Running \"%s\" ..." % (cmdline,)
-        rc = os.system(". " + self.virtualenvpath + "/bin/activate; PBUNDLE_REQ='" +
-                       self.basepath + "'; " + cmdline)
-        # Note: rc is not the real return code, but checking == 0 should be
-        # good enough.
+            print "Running \"%s\" ..." % (' '.join(command),)
+
+        env = os.environ.copy()
+        if 'PYTHONHOME' in env:
+            del env['PYTHONHOME']
+        env['VIRTUAL_ENV'] = self.virtualenvpath
+        env['PATH'] = (
+            os.path.join(self.virtualenvpath, "local/bin") + ':' +
+            os.path.join(self.virtualenvpath, "bin") + ':' +
+            env['PATH']
+            )
+        for key, value in self.envfile().iteritems():
+            env[key] = value
+
+        rc = subprocess.Popen(
+            command,
+            env=env,
+            close_fds=True,
+            shell=False,
+            cwd=cwd
+            ).wait()
+
         if rc != 0 and raise_on_error:
-            raise PBCliError("External command %r failed with exit code %d" % (cmdline, (rc&0xFF00)>>8))
+            raise PBCliError("External command %r failed with exit code %d" % (' '.join(command), rc))
+        return rc
 
     def uninstall_removed(self):
         to_remove = set(self.requirements_last.keys()) - \
