@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 import os
 import sys
 import time
@@ -196,23 +198,28 @@ class PBundle:
         try:
             return self._call_program(command, verbose=verbose, honor_envfile=True, raise_on_error=False)
         except OSError as e:
-            print e
+            print(e)
             return 127
 
     def envfile(self):
         ef = {}
+        filename = os.path.join(self.workpath, "environment.py")
         try:
-            execfile(os.path.join(self.workpath, "environment.py"), {}, ef)
+            if sys.version_info >= (3,):
+                with open(filename, 'r') as f:
+                    exec(compile(f.read(), filename, 'exec'), {}, ef)
+            else:
+                execfile(filename, {}, ef)
         except IOError as e:
             # ignore non-existence of environment.py
             pass
         except Exception as e:
-            print 'environment.py: %s' % e
+            print('environment.py: %s' % e)
         return ef
 
     def _call_program(self, command, verbose=True, raise_on_error=True, cwd=None, honor_envfile=False):
         if verbose:
-            print "Running \"%s\" ..." % (' '.join(command),)
+            print("Running \"%s\" ..." % (' '.join(command),))
 
         env = os.environ.copy()
         if 'PYTHONHOME' in env:
@@ -223,7 +230,7 @@ class PBundle:
             os.path.join(self.virtualenvpath, "bin") + ':' +
             env['PATH']
             )
-        for key, value in self.envfile().iteritems():
+        for key, value in self.envfile().items():
             env[key] = value
 
         rc = subprocess.Popen(
@@ -310,16 +317,16 @@ class PBCli():
         try:
             return self.handle_args(argv)
         except PBCliError as e:
-            print "E: " + str(e)
+            print("E:", str(e))
             return 1
         except Exception as e:
-            print "E: Internal error in pbundler:"
-            print "  ", e
+            print("E: Internal error in pbundler:")
+            print("  ", e)
             traceback.print_exc()
             return 120
 
     def cmd_help(self, args):
-        print USAGE.strip()
+        print(USAGE.strip())
 
     def cmd_init(self, args):
         # can't use PBundle here
