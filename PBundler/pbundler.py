@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 import os
 import sys
-import json
-import hashlib
-import fnmatch
 import time
 import traceback
 
@@ -177,7 +174,7 @@ class PBundle:
         try:
             execfile(os.path.join(self.workpath, "environment.py"), {}, ef)
         except IOError as e:
-            # ignore non-existence of environment.json
+            # ignore non-existence of environment.py
             pass
         except Exception as e:
             print 'environment.py: %s' % e
