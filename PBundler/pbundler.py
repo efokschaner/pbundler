@@ -90,12 +90,17 @@ class PBundle:
             if not os.path.isfile(filename):
                 # ignore subdirs, e.g. .svn ones.
                 continue
-            f = open(filename, 'rb')
-            lines = f.readlines()
-            f.close()
+            lines = None
+            with open(filename, 'r') as f:
+                try:
+                    lines = f.readlines()
+                except UnicodeDecodeError:
+                    # Probably a binary.
+                    continue
             if not lines:
                 # Empty.
                 continue
+
             line0 = lines[0].strip()
             if not line0.startswith(shebang_pfx):
                 # Probably a binary.
@@ -108,7 +113,7 @@ class PBundle:
                 # Already patched, skip rewrite.
                 continue
             lines = [new_shebang+'\n'] + lines[1:]
-            f = open(filename, 'wb')
+            f = open(filename, 'w')
             f.writelines(lines)
             f.close()
 
