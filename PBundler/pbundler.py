@@ -5,6 +5,7 @@ import json
 import hashlib
 import fnmatch
 import time
+import traceback
 
 import pip.req
 from pip.exceptions import InstallationError
@@ -265,6 +266,7 @@ class PBCli():
         except Exception as e:
             print "E: Internal error in pbundler:"
             print "  ", e
+            traceback.print_exc()
             return 120
 
     def cmd_help(self, args):
