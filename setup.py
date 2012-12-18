@@ -2,16 +2,24 @@
 from setuptools import setup, find_packages
 import sys
 
-extra = {}
+extra = {
+    'install_requires': ['distribute', 'pip>=1.1']
+}
+
 if sys.version_info >= (3,):
     extra['use_2to3'] = True
+
+try:
+    import venv
+except:
+    # on 3.3+, we'll use venv instead, which is bundled with the interpreter.
+    extra['install_requires'].append('virtualenv>=1.7')
 
 setup(
     name="pbundler",
     version="0.0.5",
     packages=find_packages(),
     zip_safe=False,
-    install_requires=['virtualenv>=1.7', 'distribute', 'pip>=1.1'],
     package_data={
         '': ['*.md'],
     },

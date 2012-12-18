@@ -7,7 +7,15 @@ import subprocess
 
 import pip.req
 from pip.exceptions import InstallationError
-import virtualenv
+
+_using_venv = False
+try:
+    # bundled with Python 3.3+
+    import venv
+    _using_venv = True
+    import urllib.request
+except:
+    import virtualenv
 
 # initialize vcs support for pip <= 1.1
 if 'version_control' in pip.__dict__:
@@ -69,11 +77,38 @@ class PBundle:
 
     def ensure_virtualenv(self):
         if not os.path.exists(os.path.join(self.virtualenvpath, 'bin')):
-            os.system("virtualenv " + self.virtualenvpath + " 2>&1")
+            if _using_venv:
+                venv.create(self.virtualenvpath)
+                self._install_prereqs()
+            else:
+                os.system("virtualenv " + self.virtualenvpath + " 2>&1")
+
+    def _install_prereqs(self):
+        # assumes _using_venv = True, python3.3+, as virtualenv would do
+        # something similar itself.
+        distribute_setup_py = os.environ.get('DISTRIBUTE_SETUP', None)
+        if distribute_setup_py is not None:
+            if not (os.path.isfile(distribute_setup_py) and
+                    os.access(distribute_setup_py, os.X_OK)):
+                raise PBCliError("Program specified in DISTRIBUTE_SETUP is not (an) executable.")
+        else:
+            distribute_setup_url = 'http://python-distribute.org/distribute_setup.py'
+            distribute_setup_py = os.path.join(self.workpath, "distribute_setup.py")
+            print("Downloading", distribute_setup_url)
+            with urllib.request.urlopen(distribute_setup_url) as setup_sock:
+                with open(distribute_setup_py, 'wb') as f:
+                    buf = setup_sock.read()
+                    f.write(buf)
+
+            os.chmod(distribute_setup_py, 0o755)
+
+        self._call_program(["python", distribute_setup_py], cwd=self.workpath)
+        self._call_program(["easy_install", "pip"], cwd=self.workpath)
 
     def ensure_relocatable(self):
         self.make_scripts_relocatable()
-        virtualenv.fixup_pth_and_egg_link(self.virtualenvpath)
+        if not _using_venv:
+            virtualenv.fixup_pth_and_egg_link(self.virtualenvpath)
 
     def make_scripts_relocatable(self):
         shebang_pfx = '#!'
@@ -87,6 +122,9 @@ class PBundle:
             filename = os.path.join(bin_dir, filename)
             if not os.path.isfile(filename):
                 # ignore subdirs, e.g. .svn ones.
+                continue
+            if os.path.islink(filename):
+                # venv will symlink python, don't even try to patch these.
                 continue
             lines = None
             with open(filename, 'r') as f:
