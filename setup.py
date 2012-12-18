@@ -17,7 +17,7 @@ except:
 
 setup(
     name="pbundler",
-    version="0.0.5",
+    version="0.0.6",
     packages=find_packages(),
     zip_safe=False,
     package_data={
