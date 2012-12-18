@@ -20,9 +20,6 @@ setup(
     version="0.0.6",
     packages=find_packages(),
     zip_safe=False,
-    package_data={
-        '': ['*.md'],
-    },
     entry_points={
         'console_scripts': [
             'pbundle = PBundler.entrypoints:pbcli',
