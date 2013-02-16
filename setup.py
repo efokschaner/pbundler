@@ -3,27 +3,21 @@ from setuptools import setup, find_packages
 import sys
 
 extra = {
-    'install_requires': ['distribute', 'pip>=1.1']
+    'install_requires': ['distribute']
 }
 
 if sys.version_info >= (3,):
     extra['use_2to3'] = False
 
-try:
-    import venv
-except:
-    # on 3.3+, we'll use venv instead, which is bundled with the interpreter.
-    extra['install_requires'].append('virtualenv>=1.7')
-
 setup(
     name="pbundler",
-    version="0.0.6",
+    version="0.8.0DEV",
     packages=find_packages(),
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'pbundle = PBundler.entrypoints:pbcli',
-            'pbundle-py = PBundler.entrypoints:pbpy',
+            'pbundle = pbundler.cli:pbcli',
+            'pbundle-py = pbundler.cli:pbpy',
         ],
     },
 

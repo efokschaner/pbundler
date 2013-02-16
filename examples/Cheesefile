@@ -1,0 +1,10 @@
+source("pypi")
+
+cheese("psycopg2")
+
+with group("development"):
+    cheese("nose")
+
+cheese("Pillow")
+
+cheese("pbundler", path='/home/ch/Source/pbundler')

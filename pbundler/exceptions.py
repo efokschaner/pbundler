@@ -1,0 +1,3 @@
+
+class PBundlerException(Exception):
+    pass

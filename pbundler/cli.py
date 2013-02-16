@@ -1,11 +1,13 @@
 from __future__ import print_function
+from __future__ import absolute_import
 
 import os
 import sys
 import time
 import traceback
+import sys
 
-from PBundler import PBundle
+import pbundler
 
 class PBCliError(Exception):
     def __init__(self, message):
@@ -32,18 +34,15 @@ Report bugs:  https://github.com/zeha/pbundler/issues
 
 class PBCli():
     def __init__(self):
-        self._pb = None
+        self._bundle = None
+
 
     @property
-    def pb(self):
-        if not self._pb:
-            basepath = PBundle.find_basepath()
-            if not basepath:
-                message = ("Could not find requirements.txt " +
-                           "in path from here to root.")
-                raise PBCliError(message)
-            self._pb = PBundle(basepath)
-        return self._pb
+    def bundle(self):
+        if not self._bundle:
+            self._bundle = pbundler.PBundler.load_bundle()
+        return self._bundle
+
 
     def handle_args(self, argv):
         args = argv[1:]
@@ -55,12 +54,12 @@ class PBCli():
         if 'cmd_' + command in PBCli.__dict__:
             return PBCli.__dict__['cmd_' + command](self, args)
         else:
-            raise PBCliError("Unknown command \"%s\"" % (command,))
+            raise pbundler.PBundlerException("Unknown command \"%s\"" % (command,))
 
     def run(self, argv):
         try:
             return self.handle_args(argv)
-        except PBCliError as e:
+        except pbundler.PBundlerException as e:
             print("E:", str(e))
             return 1
         except Exception as e:
@@ -83,17 +82,29 @@ class PBCli():
             f.write("\n")
 
     def cmd_install(self, args):
-        if self.pb.requirements_changed():
-            self.pb.uninstall_removed()
-            self.pb.install()
-            self.pb.save_requirements()
+        self.bundle.install(['default'])
 
     def cmd_upgrade(self, args):
-        self.pb.uninstall_removed()
-        self.pb.upgrade()
+        self.bundle.upgrade()
 
     def cmd_run(self, args):
-        return self.pb.run(args, verbose=False)
+        #self.bundle.validate_requirements()
+        return self.bundle.run(args, verbose=False)
 
     def cmd_py(self, args):
-        return self.pb.run(["python"] + args, verbose=False)
+        #self.bundle.validate_requirements()
+        return self.bundle.run(["python", "-S"] + args, verbose=False)
+
+    def cmd_repl(self, args):
+        #self.bundle.validate_requirements()
+        import pbundler.repl
+        pbundler.repl.run()
+
+
+def pbcli():
+    sys.exit(PBCli().run(sys.argv))
+
+
+def pbpy():
+    argv = [sys.argv[0], "py"] + sys.argv[1:]
+    sys.exit(PBCli().run(argv))
