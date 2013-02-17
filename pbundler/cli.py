@@ -12,17 +12,18 @@ import pbundler
 
 
 USAGE = """
-pbundle                  Copyright 2012 Christian Hofstaedtler
+pbundle                  Copyright 2012,2013 Christian Hofstaedtler
 pbundle Usage:
-  pbundle [install]    - Run pip, if needed (also uninstalls removed
-                         requirements)
-  pbundle upgrade      - Run pip, with --upgrade
-  pbundle init         - Create empty requirements.txt
-  pbundle run program  - Run "program" in activated virtualenv
-  pbundle py args      - Run activated python with args
+  pbundle [install]    - Install the packages from Cheesefile
+  pbundle update       - Update dependencies to their latest versions
+  pbundle init         - Create a basic Cheesefile
+  pbundle run program  - Run "program" in activated environment
+  pbundle console      - Start an interactive activated python session
 
 To auto-enable your scripts, use "#!/usr/bin/env pbundle-py" as the
-shebang line.
+shebang line. Alternatively:
+  require pbundler
+  pbundler.PBundler.setup()
 
 Website:      https://github.com/zeha/pbundler
 Report bugs:  https://github.com/zeha/pbundler/issues
@@ -78,8 +79,8 @@ class PBCli():
     def cmd_install(self, args):
         self.bundle.install(['default'])
 
-    def cmd_upgrade(self, args):
-        self.bundle.upgrade()
+    def cmd_update(self, args):
+        self.bundle.update()
 
     def cmd_run(self, args):
         #self.bundle.validate_requirements()
