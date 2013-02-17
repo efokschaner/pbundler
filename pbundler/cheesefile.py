@@ -6,11 +6,14 @@ import shlex
 from contextlib import contextmanager
 import pkg_resources
 
-__all__ = ['Cheesefile', 'Cheese']
+__all__ = ['Cheesefile', 'Cheese', 'CHEESEFILE', 'CHEESEFILE_LOCK']
 
 from . import PBundlerException
 from .dsl import DslRunner
 from .sources import CheeseshopSource
+
+CHEESEFILE = 'Cheesefile'
+CHEESEFILE_LOCK = 'Cheesefile.lock'
 
 
 class Cheese(object):
@@ -77,6 +80,7 @@ class Cheese(object):
         return pkg_resources.Requirement.parse(self.name + version)
 
 
+
 class CheesefileContext(object):
     """DSL Context class. All methods not starting with an underscore
     are exposed to the Cheesefile."""
@@ -135,6 +139,22 @@ class Cheesefile(object):
 
     def __init__(self, path):
         self.path = path
+
+
+    @classmethod
+    def generate_empty_file(cls, path):
+        filepath = os.path.join(path, CHEESEFILE)
+        if os.path.exists(filepath):
+            raise PBundlerException("Cowardly refusing, as %s already exists here." %
+                                    (CHEESEFILE,))
+        print("Writing new %s to %s" % (CHEESEFILE, filepath))
+        with open(filepath, "w") as f:
+            f.write("# PBundler Cheesefile\n")
+            f.write("\n")
+            f.write("source(\"pypi\")\n")
+            f.write("\n")
+            f.write("# cheese(\"Flask\")\n")
+            f.write("\n")
 
 
     def parse(self):

@@ -16,7 +16,7 @@ import pkg_resources
 from . import PBundlerException
 from .util import PBFile
 from .pypath import PyPath
-from .cheesefile import Cheesefile, Cheese
+from .cheesefile import Cheesefile, Cheese, CHEESEFILE, CHEESEFILE_LOCK
 from .sources import CheeseshopSource, FilesystemSource
 from .localstore import LocalStore
 
@@ -24,10 +24,6 @@ from .localstore import LocalStore
 # initialize vcs support for pip <= 1.1
 #if 'version_control' in pip.__dict__:
 #    pip.version_control()
-
-
-CHEESEFILE = 'Cheesefile'
-CHEESEFILE_LOCK = 'Cheesefile.lock'
 
 
 

@@ -74,14 +74,10 @@ class PBCli():
         print(USAGE.strip())
 
     def cmd_init(self, args):
-        # can't use PBundle here
-        if os.path.exists(REQUIREMENTS):
-            raise PBCliError("Cowardly refusing, as %s already exists here." %
-                             (REQUIREMENTS,))
-        with open(REQUIREMENTS, "w") as f:
-            f.write("# pbundle MAGIC\n")
-            f.write("#pbundle>=0\n")
-            f.write("\n")
+        path = os.getcwd()
+        if len(args) > 0:
+            path = os.path.abspath(args[0])
+        pbundler.cheesefile.Cheesefile.generate_empty_file(path)
 
     def cmd_install(self, args):
         self.bundle.install(['default'])
