@@ -86,7 +86,29 @@ class PBCli():
         return self.bundle.exec_enabled(args)
 
     def cmd_console(self, args):
-        return self.bundle.exec_enabled([sys.executable] + args)
+        plain = False
+        for arg in args[:]:
+            if arg == '--':
+                args.pop(0)
+                break
+            elif arg == '--plain':
+                args.pop(0)
+                plain = True
+            else:
+                break
+
+        command = [sys.executable]
+        if not plain:
+            # If ipython is part of the bundle, use it.
+            for shell_name in ['ipython']:
+                shell = self.bundle.get_cheese(shell_name)
+                if not shell:
+                    continue
+                # FIXME: need a way to look this path up.
+                command = [os.path.join(shell.dist.location, "..", "bin", shell_name)]
+
+        command.extend(args)
+        return self.bundle.exec_enabled(command)
 
     def cmd_repl(self, args):
         #self.bundle.validate_requirements()

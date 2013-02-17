@@ -1,10 +1,11 @@
 source("pypi")
 
+cheese("Flask")
 cheese("psycopg2")
+cheese("Pillow")
 
 with group("development"):
     cheese("nose")
 
-cheese("Pillow")
-
-cheese("pbundler", path='/home/ch/Source/pbundler')
+# cheese("pbundler", path='/home/ch/Source/pbundler')
+cheese("ipython")

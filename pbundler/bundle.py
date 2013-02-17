@@ -162,11 +162,15 @@ class Bundle:
         if len(unclean) > 0:
             raise PBundlerException("sys.modules contains foreign modules: %s" % ','.join(unclean))
 
-    def enable(self, groups):
+    def load_cheese(self):
         if getattr(self, 'required', None) is None:
             # while we don't have a lockfile reader:
-            self.install(groups)
+            self.install(['default'])
             #raise PBundlerException("Your bundle is not installed.")
+
+    def enable(self, groups):
+        # TODO: remove groups from method sig
+        self.load_cheese()
 
         # reset import path
         new_path = [sys.path[0]]
@@ -185,9 +189,17 @@ class Bundle:
         self._check_sys_modules_is_clean()
 
     def exec_enabled(self, command):
+        # We don't actually need all the cheese loaded, but it's great to
+        # fail fast.
+        self.load_cheese()
+
         import pkg_resources
         dist = pkg_resources.get_distribution('pbundler')
         activation_path = os.path.join(dist.location, 'pbundler', 'activation')
         os.putenv('PYTHONPATH', activation_path)
         os.putenv('PBUNDLER_CHEESEFILE', self.cheesefile.path)
         os.execvp(command[0], command)
+
+    def get_cheese(self, name, default=None):
+        self.load_cheese()
+        return self.required.get(name, default)
