@@ -58,7 +58,7 @@ class CheeseshopSource(object):
 class FilesystemSource(object):
 
     def __init__(self, path):
-        self.path = path
+        self.path = os.path.expanduser(path)
 
     def available_versions(self, cheese):
         dists = pkg_resources.find_distributions(self.path, only=True)

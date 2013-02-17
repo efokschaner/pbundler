@@ -7,5 +7,5 @@ cheese("Pillow")
 with group("development"):
     cheese("nose")
 
-# cheese("pbundler", path='/home/ch/Source/pbundler')
+# cheese("pbundler", path='~/Source/pbundler')
 cheese("ipython")
