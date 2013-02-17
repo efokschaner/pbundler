@@ -55,7 +55,7 @@ class PyPath:
 
     @classmethod
     def replace_sys_path(cls, new_path):
-        for path in sys.path:
+        for path in sys.path[:]:
             sys.path.remove(path)
         sys.path.extend(new_path)
 
