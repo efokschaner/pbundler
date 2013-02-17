@@ -4,6 +4,7 @@ from __future__ import absolute_import
 __all__ = ['LocalStore']
 
 import os
+import platform
 import pkg_resources
 import glob
 import subprocess
@@ -18,15 +19,17 @@ class LocalStore(object):
 
     def __init__(self, path=None):
         if path is None:
-            if os.getenv('CHEESE_PATH'):
-                self.path = os.getenv('CHEESE_PATH')
+            if os.getenv('PBUNDLER_STORE'):
+                self.path = os.getenv('PBUNDLER_STORE')
             else:
-                self.path = os.path.expanduser('~/.cache/cheese/')
+                self.path = os.path.expanduser('~/.cache/pbundler/')
         else:
             self.path = path
 
         PBFile.ensure_dir(self.path)
         self._temp_path = None
+        self.python_name = ('%s-%s' % (platform.python_implementation(),
+                            ('.'.join(platform.python_version_tuple()[:-1]))))
 
     @property
     def cache_path(self):
@@ -50,7 +53,8 @@ class LocalStore(object):
         return None
 
     def path_for(self, cheese, sub=None):
-        path = [self.path, 'cheese', cheese.name, cheese.exact_version]
+        path = [self.path, 'cheese', self.python_name,
+                '%s-%s' % (cheese.name, cheese.exact_version)]
         if sub is not None:
             path.append(sub)
         return os.path.join(*path)
