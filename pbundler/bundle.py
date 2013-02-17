@@ -136,8 +136,12 @@ class Bundle:
         # TODO: file format is wrong. at least we must consider groups,
         # and we shouldn't rewrite the entire file (think groups, platforms).
         with file(os.path.join(self.path, CHEESEFILE_LOCK), 'wt') as lockfile:
-            for pkg in sorted(self.required.keys()):
-                pkg = self.required[pkg]
+            for name in sorted(self.required.keys()):
+                # ignore ourselves and our dependencies (which should
+                # only ever be distribute).
+                if name in ['pbundler', 'distribute']:
+                    continue
+                pkg = self.required[name]
                 lockfile.write("cheese(%r, %r, path=%r)\n" % (pkg.name, pkg.exact_version, pkg.path))
 
     def _check_sys_modules_is_clean(self):
