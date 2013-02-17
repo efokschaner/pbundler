@@ -1,6 +1,8 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+__all__ = ['CheeseshopSource']
+
 import os
 import shlex
 from contextlib import contextmanager
@@ -8,11 +10,8 @@ import pkg_resources
 from urllib2 import urlopen
 import xmlrpclib
 
-__all__ = ['CheeseshopSource']
-
 from . import PBundlerException
 from .util import PBFile, PBDownloader
-
 
 
 class CheeseshopSource(object):
@@ -22,20 +21,16 @@ class CheeseshopSource(object):
         if self.url.endswith('/'):
             self.url = self.url[:-1]
 
-
     def _src(self):
         return xmlrpclib.ServerProxy(self.url, xmlrpclib.Transport())
-
 
     def available_versions(self, cheese):
         versions = self._src().package_releases(cheese.name, True)
         return versions
 
-
     def requires(self, cheese):
         d = self._src().release_data(cheese.name, cheese.exact_version)
         return d["requires"]
-
 
     def download(self, cheese, target_path):
         urls = self._src().release_urls(cheese.name, cheese.exact_version)
@@ -65,11 +60,9 @@ class FilesystemSource(object):
     def __init__(self, path):
         self.path = path
 
-
     def available_versions(self, cheese):
         dists = pkg_resources.find_distributions(self.path, only=True)
         return [dist.version for dist in dists]
-
 
     def get_distribution(self, cheese):
         dists = pkg_resources.find_distributions(self.path, only=True)

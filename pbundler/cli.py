@@ -1,6 +1,8 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+__all__ = ['PBCli', 'pbcli', 'pbpy']
+
 import os
 import sys
 import time
@@ -55,12 +57,12 @@ class PBCli():
     def run(self, argv):
         try:
             return self.handle_args(argv)
-        except pbundler.PBundlerException as e:
-            print("E:", str(e))
+        except pbundler.PBundlerException as ex:
+            print("E:", str(ex))
             return 1
-        except Exception as e:
+        except Exception as ex:
             print("E: Internal error in pbundler:")
-            print("  ", e)
+            print("  ", ex)
             traceback.print_exc()
             return 120
 

@@ -10,21 +10,12 @@ import traceback
 import subprocess
 import pkg_resources
 
-#import pip.req
-#from pip.exceptions import InstallationError
-
 from . import PBundlerException
 from .util import PBFile
 from .pypath import PyPath
 from .cheesefile import Cheesefile, Cheese, CHEESEFILE, CHEESEFILE_LOCK
 from .sources import CheeseshopSource, FilesystemSource
 from .localstore import LocalStore
-
-
-# initialize vcs support for pip <= 1.1
-#if 'version_control' in pip.__dict__:
-#    pip.version_control()
-
 
 
 class Bundle:
@@ -37,7 +28,6 @@ class Bundle:
         self.cheesefile.parse()
 
         self.localstore = LocalStore()
-
 
     @classmethod
     def load(cls, path=None):
@@ -52,11 +42,9 @@ class Bundle:
 
         return cls(path)
 
-
     def validate_requirements(self):
         self.calculate_requirements()
         pass
-
 
     def _add_new_dep(self, dep):
         cheese = Cheese.from_requirement(dep)
@@ -66,7 +54,6 @@ class Bundle:
             return None
         self.required[cheese.name] = cheese
         return cheese
-
 
     def _resolve_deps(self):
         for pkg in self.required.values():
@@ -128,7 +115,6 @@ class Bundle:
             new_deps.remove(None)
         return new_deps
 
-
     def install(self, groups):
         self.required = self.cheesefile.collect(groups, self.current_platform)
 
@@ -141,11 +127,10 @@ class Bundle:
         for pkg in self.required.values():
             if getattr(pkg.dist, 'is_sdist', False) is True:
                 dist = self.localstore.install(pkg, pkg.dist)
-                pkg.use_dist(dist) # mark as installed
+                pkg.use_dist(dist)  # mark as installed
 
         self._write_cheesefile_lock()
         print("Your bundle is complete.")
-
 
     def _write_cheesefile_lock(self):
         # TODO: file format is wrong. at least we must consider groups,
@@ -155,11 +140,10 @@ class Bundle:
                 pkg = self.required[pkg]
                 lockfile.write("cheese(%r, %r, path=%r)\n" % (pkg.name, pkg.exact_version, pkg.path))
 
-
     def _check_sys_modules_is_clean(self):
         # TODO: Possibly remove this when resolver/activation development is done.
         unclean = []
-        for name,module in sys.modules.iteritems():
+        for name, module in sys.modules.iteritems():
             source = getattr(module, '__file__', None)
             if source is None or name == '__main__':
                 continue
@@ -172,8 +156,7 @@ class Bundle:
                 continue
             unclean.append('%s from %s' % (name, source))
         if len(unclean) > 0:
-            raise PBundlerException("sys.modules contains foreign modules: %s"  % ','.join(unclean))
-
+            raise PBundlerException("sys.modules contains foreign modules: %s" % ','.join(unclean))
 
     def enable(self, groups):
         if getattr(self, 'required', None) is None:

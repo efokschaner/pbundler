@@ -1,3 +1,8 @@
+from __future__ import print_function
+from __future__ import absolute_import
+
+__all__ = ['DslRunner']
+
 
 class DslRunner(object):
     """Runs Python code in the context of a class.
@@ -7,7 +12,6 @@ class DslRunner(object):
 
     def __init__(self, contextclass):
         self.contextclass = contextclass
-
 
     def make_context(self):
         ctx = self.contextclass()

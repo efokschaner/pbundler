@@ -1,11 +1,11 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+__all__ = ['PyPath']
+
 import ctypes
 import sys
 import pkg_resources
-
-__all__ = ['PyPath']
 
 
 class PyPath:
@@ -29,7 +29,6 @@ class PyPath:
 
         return Py_GetPath().split(':')
 
-
     @staticmethod
     def path_for_pkg_name(pkg_name):
         pkgs = [pkg for pkg in pkg_resources.working_set
@@ -38,13 +37,11 @@ class PyPath:
             return None
         return pkgs[0].location
 
-
     @classmethod
     def bundler_path(cls):
         """Returns the path to PBundler itself."""
 
         return cls.path_for_pkg_name("pbundler")
-
 
     @classmethod
     def clean_path(cls):
@@ -55,7 +52,6 @@ class PyPath:
 
         path = [cls.bundler_path()] + cls.builtin_path()
         return path
-
 
     @classmethod
     def replace_sys_path(cls, new_path):

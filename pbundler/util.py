@@ -1,10 +1,19 @@
+from __future__ import print_function
+from __future__ import absolute_import
+
+__all__ = ['PBFile', 'PBDownloader', 'PBArchive']
+
 import os
 from hashlib import md5
 from urllib2 import Request, urlopen, HTTPError
 import subprocess
 import shutil
+import pkg_resources
 
 from . import PBundlerException
+
+# Utility functions. Not for public consumption.
+# If you need some of these exposed, please talk to us.
 
 
 class PBFile(object):
@@ -14,9 +23,8 @@ class PBFile(object):
         try:
             with open(os.path.join(path, filename), 'r') as f:
                 return f.read()
-        except Exception as e:
+        except:
             return None
-
 
     @staticmethod
     def find_upwards(fn, root=os.path.realpath(os.curdir)):
@@ -27,12 +35,10 @@ class PBFile(object):
             return None
         return PBFile.find_upwards(fn, up)
 
-
     @staticmethod
     def ensure_dir(path):
         if not os.path.exists(path):
             os.makedirs(path)
-
 
     @staticmethod
     def md5_digest(path):
@@ -44,8 +50,8 @@ class PBFile(object):
 
 class PBDownloader(object):
 
-    @staticmethod
-    def download_checked(url, target_file, expected_digest):
+    @classmethod
+    def download_checked(cls, url, target_file, expected_digest):
         if os.path.exists(target_file):
             # file already exists, see if we can use it.
             if PBFile.md5_digest(target_file) == expected_digest:
@@ -54,9 +60,12 @@ class PBDownloader(object):
             else:
                 os.unlink(target_file)
 
+        user_agent = ("pbunder/%s " % (cls.my_version) +
+                      "(http://github.com/zeha/pbundler/issues)")
+
         try:
             req = Request(url)
-            req.add_header("User-Agent", "pbunder/0.8DEV (http://github.com/zeha/pbundler/issues)")
+            req.add_header("User-Agent", user_agent)
             req.add_header("Accept", "*/*")
             with file(target_file, 'wb') as f:
                 sock = urlopen(req)
@@ -65,17 +74,23 @@ class PBDownloader(object):
                 finally:
                     sock.close()
 
-        except Exception as e:
-            raise PBundlerException("Downloading %s failed (%s)" % (url, e))
-
+        except Exception as ex:
+            raise PBundlerException("Downloading %s failed (%s)" % (url, ex))
 
         local_digest = PBFile.md5_digest(target_file)
         if local_digest != expected_digest:
             os.unlink(target_file)
-            raise PBundlerException("Downloading %s failed (MD5 Digest %s did not match expected %s)" % (url, local_digest, expected_digest))
+            msg = ("Downloading %s failed (MD5 Digest %s did not match expected %s)" %
+                   (url, local_digest, expected_digest))
+            raise PBundlerException(msg)
         else:
             # local file is ok
             return
+
+try:
+    PBDownloader.my_version = pkg_resources.get_distribution('pbundler').version
+except:
+    PBDownloader.my_version = 'DEV'
 
 
 class PBArchive(object):
@@ -87,7 +102,6 @@ class PBArchive(object):
             self.filetype = 'tar'
         if self.filetype not in ['zip', 'tar']:
             raise PBundlerException("Unsupported Archive file: %s" % (self.path))
-
 
     def unpack(self, destination):
         if os.path.exists(destination):
