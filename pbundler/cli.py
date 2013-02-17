@@ -5,13 +5,8 @@ import os
 import sys
 import time
 import traceback
-import sys
 
 import pbundler
-
-class PBCliError(Exception):
-    def __init__(self, message):
-        Exception.__init__(self, message)
 
 
 USAGE = """
@@ -36,13 +31,11 @@ class PBCli():
     def __init__(self):
         self._bundle = None
 
-
     @property
     def bundle(self):
         if not self._bundle:
             self._bundle = pbundler.PBundler.load_bundle()
         return self._bundle
-
 
     def handle_args(self, argv):
         args = argv[1:]
@@ -56,7 +49,8 @@ class PBCli():
         if 'cmd_' + command in PBCli.__dict__:
             return PBCli.__dict__['cmd_' + command](self, args)
         else:
-            raise pbundler.PBundlerException("Unknown command \"%s\"" % (command,))
+            raise pbundler.PBundlerException("Could not find command \"%s\"." %
+                                             (command,))
 
     def run(self, argv):
         try:
