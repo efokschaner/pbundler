@@ -17,7 +17,7 @@ pbundle Usage:
   pbundle [install]    - Install the packages from Cheesefile
   pbundle update       - Update dependencies to their latest versions
   pbundle init         - Create a basic Cheesefile
-  pbundle run program  - Run "program" in activated environment
+  pbundle exec program - Run "program" in activated environment
   pbundle console      - Start an interactive activated python session
 
 To auto-enable your scripts, use "#!/usr/bin/env pbundle-py" as the
@@ -82,13 +82,11 @@ class PBCli():
     def cmd_update(self, args):
         self.bundle.update()
 
-    def cmd_run(self, args):
-        #self.bundle.validate_requirements()
-        return self.bundle.run(args, verbose=False)
+    def cmd_exec(self, args):
+        return self.bundle.exec_enabled(args)
 
-    def cmd_py(self, args):
-        #self.bundle.validate_requirements()
-        return self.bundle.run(["python", "-S"] + args, verbose=False)
+    def cmd_console(self, args):
+        return self.bundle.exec_enabled([sys.executable] + args)
 
     def cmd_repl(self, args):
         #self.bundle.validate_requirements()

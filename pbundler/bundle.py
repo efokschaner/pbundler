@@ -160,7 +160,7 @@ class Bundle:
 
     def enable(self, groups):
         if getattr(self, 'required', None) is None:
-            # for testing:
+            # while we don't have a lockfile reader:
             self.install(groups)
             #raise PBundlerException("Your bundle is not installed.")
 
@@ -179,3 +179,11 @@ class Bundle:
         PyPath.replace_sys_path(new_path)
 
         self._check_sys_modules_is_clean()
+
+    def exec_enabled(self, command):
+        import pkg_resources
+        dist = pkg_resources.get_distribution('pbundler')
+        activation_path = os.path.join(dist.location, 'pbundler', 'activation')
+        os.putenv('PYTHONPATH', activation_path)
+        os.putenv('PBUNDLER_CHEESEFILE', self.cheesefile.path)
+        os.execvp(command[0], command)
