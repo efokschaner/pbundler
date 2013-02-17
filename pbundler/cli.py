@@ -51,6 +51,8 @@ class PBCli():
             command = args.pop(0)
         if command in ['--help', '-h']:
             command = 'help'
+        if command == '--version':
+            command = 'version'
         if 'cmd_' + command in PBCli.__dict__:
             return PBCli.__dict__['cmd_' + command](self, args)
         else:
@@ -99,6 +101,12 @@ class PBCli():
         #self.bundle.validate_requirements()
         import pbundler.repl
         pbundler.repl.run()
+
+    def cmd_version(self, args):
+        import pkg_resources
+        dist = pkg_resources.get_distribution('pbundler')
+        print(dist)
+        return 0
 
 
 def pbcli():

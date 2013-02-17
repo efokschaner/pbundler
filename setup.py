@@ -11,7 +11,7 @@ if sys.version_info >= (3,):
 
 setup(
     name="pbundler",
-    version="0.8.0DEV",
+    version="0.8.0a0",
     packages=find_packages(),
     zip_safe=False,
     entry_points={
