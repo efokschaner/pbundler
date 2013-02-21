@@ -1,6 +1,23 @@
-req('Flask', '0.9', path=None)
-req('Jinja2', '2.6', path=None)
-req('Pillow', '1.7.8', path=None)
-req('Werkzeug', '0.8.3', path=None)
-req('ipython', '0.13.1', path=None)
-req('psycopg2', '2.4.6', path=None)
+with Cheesefile():
+    req('Flask', '0.9', path=None)
+    req('psycopg2', '2.4.6', path=None)
+    req('ipython', '0.13.1', path=None)
+    req('Pillow', '1.7.8', path=None)
+    pass
+
+with from_source('http://pypi.python.org/pypi'):
+    with resolved_req('Flask', '0.9'):
+        req('Werkzeug', '>=0.7')
+        req('Jinja2', '>=2.4')
+        pass
+    with resolved_req('psycopg2', '2.4.6'):
+        pass
+    with resolved_req('Jinja2', '2.6'):
+        pass
+    with resolved_req('Werkzeug', '0.8.3'):
+        pass
+    with resolved_req('ipython', '0.13.1'):
+        pass
+    with resolved_req('Pillow', '1.7.8'):
+        pass
+    pass

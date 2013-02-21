@@ -22,13 +22,14 @@ class Cheese(object):
     Whatever you want to call it.
     """
 
-    def __init__(self, name, version_req, platform, path, source=None):
+    def __init__(self, name, version_req, platform=None, path=None, source=None):
         self.name = name
         self.version_req = version_req
         self.platform = platform
         self.path = path
         self.source = source
         self.dist = None
+        self._requirements = None
 
     @classmethod
     def from_requirement(cls, req):
@@ -73,6 +74,13 @@ class Cheese(object):
             if not ('>' in version or '<' in version or '=' in version):
                 version = '==' + version
         return pkg_resources.Requirement.parse(self.name + version)
+
+    @property
+    def requirements(self):
+        assert(self.dist is not None)
+        if self._requirements is None:
+            self._requirements = [Cheese.from_requirement(dep) for dep in self.dist.requires()]
+        return self._requirements
 
 
 class CheesefileContext(object):
@@ -158,3 +166,51 @@ class Cheesefile(object):
                 if pkg.applies_to(platform):
                     collection[pkg.name] = pkg
         return collection
+
+
+class CheesefileLockContext(object):
+    """DSL Context class. All methods not starting with an underscore
+    are exposed to the Cheesefile.lock."""
+
+    def __init__(self):
+        self.cheesefile_data = []
+        self.from_source_data = {}
+
+    @contextmanager
+    def from_source(self, url):
+        self.from_source_data[url] = []
+        self.current_req_context = self.from_source_data[url]
+        yield
+        self.current_req_context = None
+
+    @contextmanager
+    def Cheesefile(self):
+        self.current_req_context = self.cheesefile_data
+        yield
+        self.current_req_context = None
+
+    def req(self, name, version, platform=None, path=None):
+        req = Cheese(name, version, platform, path)
+        self.current_req_context.append(req)
+
+    @contextmanager
+    def resolved_req(self, name, version):
+        prev_req_context = self.current_req_context
+        solved_req = Cheese(name, version)
+        self.current_req_context = solved_req.requirements
+        yield
+        self.current_req_context = prev_req_context
+        self.current_req_context.append(solved_req)
+
+
+class CheesefileLock(object):
+    """Parses and holds Cheesefile.locks."""
+
+    def __init__(self, path):
+        self.path = path
+
+    def parse(self):
+        runner = DslRunner(CheesefileLockContext)
+        ctx = runner.execfile(self.path)
+        for attr, val in ctx.__dict__.items():
+            self.__setattr__(attr, val)

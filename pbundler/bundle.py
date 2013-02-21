@@ -13,7 +13,7 @@ import pkg_resources
 from . import PBundlerException
 from .util import PBFile
 from .pypath import PyPath
-from .cheesefile import Cheesefile, Cheese, CHEESEFILE, CHEESEFILE_LOCK
+from .cheesefile import Cheesefile, CheesefileLock, Cheese, CHEESEFILE, CHEESEFILE_LOCK
 from .sources import CheeseshopSource, FilesystemSource
 from .localstore import LocalStore
 
@@ -26,6 +26,12 @@ class Bundle:
 
         self.cheesefile = Cheesefile(os.path.join(self.path, CHEESEFILE))
         self.cheesefile.parse()
+        cheesefile_lock_path = os.path.join(self.path, CHEESEFILE_LOCK)
+        if os.path.exists(cheesefile_lock_path):
+            self.cheesefile_lock = CheesefileLock(cheesefile_lock_path)
+            self.cheesefile_lock.parse()
+        else:
+            self.cheesefile_lock = None
 
         self.localstore = LocalStore()
 
@@ -135,13 +141,27 @@ class Bundle:
         # and we shouldn't rewrite the entire file (think groups, platforms).
         # TODO: write source to lockfile.
         with file(os.path.join(self.path, CHEESEFILE_LOCK), 'wt') as lockfile:
-            for name in sorted(self.required.keys()):
-                # ignore ourselves and our dependencies (which should
-                # only ever be distribute).
-                if name in ['pbundler', 'distribute']:
-                    continue
-                pkg = self.required[name]
-                lockfile.write("req(%r, %r, path=%r)\n" % (pkg.name, pkg.exact_version, pkg.path))
+            indent = ' '*4
+            lockfile.write("with Cheesefile():\n")
+            for pkg in self.cheesefile.collect(['default'], self.current_platform).itervalues():
+                lockfile.write(indent+"req(%r, %r, path=%r)\n" % (pkg.name, pkg.exact_version, pkg.path))
+            lockfile.write(indent+"pass\n")
+            lockfile.write("\n")
+
+            for source in self.cheesefile.sources:
+                lockfile.write("with from_source(%r):\n" % (source.url))
+                for name, pkg in self.required.items():
+                    # ignore ourselves and our dependencies (which should
+                    # only ever be distribute).
+                    if name in ['pbundler','distribute']:
+                        continue
+                    if pkg.source != source:
+                        continue
+                    lockfile.write(indent+"with resolved_req(%r, %r):\n" % (pkg.name, pkg.exact_version))
+                    for dep in pkg.requirements:
+                        lockfile.write(indent+indent+"req(%r, %r)\n" % (dep.name, dep.version_req))
+                    lockfile.write(indent+indent+"pass\n")
+                lockfile.write(indent+"pass\n")
 
     def _check_sys_modules_is_clean(self):
         # TODO: Possibly remove this when resolver/activation development is done.
