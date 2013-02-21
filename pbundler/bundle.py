@@ -73,8 +73,6 @@ class Bundle:
                 pkg.use_from(version, source)
 
             else:
-                # TODO: choose highest version from all sources
-
                 req = pkg.requirement()
                 for source in self.cheesefile.sources:
                     for version in source.available_versions(pkg):
@@ -83,7 +81,7 @@ class Bundle:
                             break
 
                 if pkg.source is None:
-                    raise PBundlerException("Package %s is not available on any sources." % (pkg.name))
+                    raise PBundlerException("Package %s %s is not available on any sources." % (pkg.name, pkg.version_req))
 
         new_deps = []
 
