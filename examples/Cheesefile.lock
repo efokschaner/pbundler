@@ -1,8 +1,8 @@
 with Cheesefile():
-    req('Flask', '0.9', path=None)
-    req('psycopg2', '2.4.6', path=None)
-    req('ipython', '0.13.1', path=None)
-    req('Pillow', '1.7.8', path=None)
+    req('Flask', '>0.1', path=None)
+    req('psycopg2', None, path=None)
+    req('ipython', None, path=None)
+    req('Pillow', None, path=None)
     pass
 
 with from_source('http://pypi.python.org/pypi'):

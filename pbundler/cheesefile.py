@@ -25,6 +25,7 @@ class Cheese(object):
     def __init__(self, name, version_req, platform=None, path=None, source=None):
         self.name = name
         self.version_req = version_req
+        self.orig_version_req = None
         self.platform = platform
         self.path = path
         self.source = source
@@ -44,7 +45,27 @@ class Cheese(object):
         return (self.platform == platform)
 
     def is_exact_version(self):
+        if self.version_req is None: return False
         return self.version_req.startswith('==')
+
+    @property
+    def version_req(self):
+        return self._version_req
+
+    @version_req.setter
+    def version_req(self, value):
+        """Version setter that ensures that exact versions end up as
+        ==version.number."""
+
+        if value is None:
+            self._version_req = value
+        else:
+            op_chars = ['>', '<', '=', '(']
+            for char in op_chars:
+                if char in value:
+                    self._version_req = value
+                    return
+            self._version_req = '==' + value
 
     @property
     def exact_version(self):
@@ -58,6 +79,7 @@ class Cheese(object):
         return self.version_req[2:]
 
     def use_from(self, version, source):
+        self.orig_version_req = self.version_req
         self.version_req = '==' + version
         self.source = source
 
@@ -71,7 +93,8 @@ class Cheese(object):
         if version is None:
             version = ''
         else:
-            if not ('>' in version or '<' in version or '=' in version):
+            if not ('>' in version or '<' in version or '=' in version
+                    or '(' in version):
                 version = '==' + version
         return pkg_resources.Requirement.parse(self.name + version)
 
@@ -80,6 +103,11 @@ class Cheese(object):
         assert(self.dist is not None)
         if self._requirements is None:
             self._requirements = [Cheese.from_requirement(dep) for dep in self.dist.requires()]
+        return self._requirements
+
+    def requirements_setter(self):
+        """Used to set requirements from a Cheesefile.lock."""
+        self._requirements = []
         return self._requirements
 
 
@@ -197,7 +225,7 @@ class CheesefileLockContext(object):
     def resolved_req(self, name, version):
         prev_req_context = self.current_req_context
         solved_req = Cheese(name, version)
-        self.current_req_context = solved_req.requirements
+        self.current_req_context = solved_req.requirements_setter()
         yield
         self.current_req_context = prev_req_context
         self.current_req_context.append(solved_req)
@@ -214,3 +242,30 @@ class CheesefileLock(object):
         ctx = runner.execfile(self.path)
         for attr, val in ctx.__dict__.items():
             self.__setattr__(attr, val)
+
+        # rebuild pkg.source attributes
+        for source_url, pkgs in self.from_source_data.iteritems():
+            source = CheeseshopSource(source_url)
+            for pkg in pkgs:
+                pkg.use_from(pkg.exact_version, source)
+
+    def matches_cheesefile(self, cheesefile):
+        flat_reqs = [item for pkgs in cheesefile.groups.values() for item in pkgs]
+        #print("flat_reqs:", repr(flat_reqs))
+        #print("", repr([pkg.name for pkg in flat_reqs]))
+        #print("pkg_names:", [pkg.name for pkg in self.cheesefile_data])
+        if sorted([pkg.name for pkg in flat_reqs]) != sorted([pkg.name for pkg in self.cheesefile_data]):
+            #print("pkg names mismatch")
+            return False
+        for their_pkg in flat_reqs:
+            our_pkg = [pkg for pkg in self.cheesefile_data if pkg.name == their_pkg.name][0]
+            if their_pkg.version_req != our_pkg.version_req:
+                #print(their_pkg.name, their_pkg.version_req, our_pkg.version_req, "mismatch")
+                return False
+        return True
+
+    def to_required(self):
+        pkgs = [item for pkgs in self.from_source_data.itervalues() for item in pkgs]
+        #for pkg in pkgs:
+        #    print(pkg.name, pkg.version_req)
+        return dict(zip([pkg.name for pkg in pkgs], pkgs))

@@ -79,8 +79,21 @@ class Bundle:
                 pkg.use_from(version, source)
 
             else:
+                # short-circuit remote resolver if we already have this
+                # package in the local store.
+
+                if not self.resolve_changes_allowed:
+                    # if this is false, then we weren't completely resolved already
+                    assert(pkg.is_exact_version())
+                    dist = self.localstore.get(pkg)
+                    if dist:
+                        #print("Short-circuited version check for", pkg.name)
+                        pkg.use_dist(dist)
+                        continue
+
                 req = pkg.requirement()
                 for source in self.cheesefile.sources:
+                    print("Querying", repr(source.url), "for", repr(pkg.name))
                     for version in source.available_versions(pkg):
                         if version in req:
                             pkg.use_from(version, source)
@@ -121,7 +134,36 @@ class Bundle:
 
     def install(self, groups):
         self.required = self.cheesefile.collect(groups, self.current_platform)
+        self.resolve_changes_allowed = True
+        if self.cheesefile_lock:
+            #print(repr(self.required))
+            #print(repr(self.cheesefile_lock.cheesefile_data))
+            if self.cheesefile_lock.matches_cheesefile(self.cheesefile):
+                #print("Cheesefile.lock matches")
+                self.required = self.cheesefile_lock.to_required()
+                self.resolve_changes_allowed = False
+            else:
+                print("Resolving packages...")
+            # check if all deps from cheesefile are the same as in lockfile.from_cheesefile
+            # check if all deps from lockfile.from_cheesefile are in lockfile.from_source
+            #### check if all deps from lockfile.from_source are installed
 
+        # wenn ich ein lockfile habe: self.required  aus lockfile.from_source fillen
+        # -> resolve
+        # neues dep in cheesefile:
+        # -> self.required w.o.
+        # -> neues dep resolven
+        # dep updaten:
+        # -> pkg aus self.required loeschen
+        # -> rekursiv requirements entfernen wenn sie nicht anderswertig verwendet werden
+        # -> als neues dep resolven
+        # komplettes update:
+        # -> self.required voellig loeschen
+        # dep removed:
+        # -> pkg aus self.required loeschen
+        # -> rekursiv requirements entfernen wenn sie nicht anderswertig verwendet werden
+
+        # TODO: incremental resolving
         while True:
             new_deps = self._resolve_deps()
             if len(new_deps) == 0:
@@ -137,6 +179,10 @@ class Bundle:
         print("Your bundle is complete.")
 
     def _write_cheesefile_lock(self):
+        if not self.resolve_changes_allowed:
+            # HACK: not really the right var or anything
+            return
+
         # TODO: file format is wrong. at least we must consider groups,
         # and we shouldn't rewrite the entire file (think groups, platforms).
         # TODO: write source to lockfile.
@@ -144,18 +190,20 @@ class Bundle:
             indent = ' '*4
             lockfile.write("with Cheesefile():\n")
             for pkg in self.cheesefile.collect(['default'], self.current_platform).itervalues():
-                lockfile.write(indent+"req(%r, %r, path=%r)\n" % (pkg.name, pkg.exact_version, pkg.path))
+                lockfile.write(indent+"req(%r, %r, path=%r)\n" % (pkg.name, pkg.orig_version_req, pkg.path))
             lockfile.write(indent+"pass\n")
             lockfile.write("\n")
 
             for source in self.cheesefile.sources:
+                #print(source)
                 lockfile.write("with from_source(%r):\n" % (source.url))
                 for name, pkg in self.required.items():
                     # ignore ourselves and our dependencies (which should
                     # only ever be distribute).
                     if name in ['pbundler','distribute']:
                         continue
-                    if pkg.source != source:
+                    #print(name, pkg, pkg.source)
+                    if pkg.source.url != source.url:
                         continue
                     lockfile.write(indent+"with resolved_req(%r, %r):\n" % (pkg.name, pkg.exact_version))
                     for dep in pkg.requirements:
