@@ -62,7 +62,7 @@ class LocalStore(object):
     def prepare(self, cheese, source):
         """Download and unpack the cheese."""
 
-        print("Preparing %s %s..." % (cheese.name, cheese.exact_version))
+        print("Downloading %s %s..." % (cheese.name, cheese.exact_version))
 
         # path we use to install _from_
         source_path = os.path.join(self.temp_path, cheese.name, cheese.exact_version)
@@ -77,33 +77,14 @@ class LocalStore(object):
 
     def install(self, cheese, unpackedsdist):
         print("Installing %s %s..." % (cheese.name, cheese.exact_version))
-        setup_cwd = unpackedsdist.path
         cheese_path = self.path_for(cheese)
         lib_path = self.path_for(cheese, 'lib')
         PBFile.ensure_dir(lib_path)
-        cmd = [sys.executable, 'setup.py', 'install',
+        unpackedsdist.run_setup_py(['install',
                '--root', cheese_path,
                '--install-lib', 'lib',
-               '--install-scripts', 'bin']
-        env = dict(os.environ)
-        env.update({'PYTHONPATH': lib_path})
-        with tempfile.NamedTemporaryFile(delete=False) as logfile:
-            proc = subprocess.Popen(cmd,
-                                    cwd=setup_cwd,
-                                    close_fds=True,
-                                    stdin=subprocess.PIPE,
-                                    stdout=logfile,
-                                    stderr=subprocess.STDOUT,
-                                    env=env)
-            proc.stdin.close()
-            rv = proc.wait()
-        if rv == 0:
-            return self.get(cheese)
-        else:
-            with file(logfile.name, 'rb') as logfile:
-                print(logfile.read())
-            msg = "Installing failed with exit code %d. Source files have been left in %r for you to examine." % (rv, setup_cwd)
-            raise PBundlerException(msg)
+               '--install-scripts', 'bin'], {'PYTHONPATH': lib_path}, "Installing")
+        return self.get(cheese)
 
 
 class UnpackedSdist(object):
@@ -113,9 +94,51 @@ class UnpackedSdist(object):
         self.is_sdist = True
 
     def requires(self):
-        requires_path = os.path.join(self.path, 'PKG-INFO', 'requires.txt')
+        self.run_setup_py(['egg_info'], {}, "Preparing", raise_on_fail=False)
+        egg_info_path = glob.glob(self.path + '/*.egg-info')
+        if not egg_info_path:
+            return []
+
+        requires_path = os.path.join(egg_info_path[0], 'requires.txt')
         if not os.path.exists(requires_path):
             return []
 
+        requires_raw = []
         with file(requires_path, 'rt') as f:
-            return pkg_resources.parse_requirements(f)
+            requires_raw = f.readlines()
+
+        # requires.txt MAY contain sections, and we ignore all of them except
+        # the unnamed section.
+        sections = [line for line in requires_raw if line.startswith('[')]
+        if sections:
+            requires_raw = requires_raw[0:requires_raw.index(sections[0])]
+        else:
+            requires_raw = requires_raw
+
+        return [req for req in pkg_resources.parse_requirements(requires_raw)]
+
+    def run_setup_py(self, args, envvars, step, raise_on_fail=True):
+        setup_cwd = self.path
+        cmd = [sys.executable, 'setup.py'] + args
+        env = dict(os.environ)
+        if envvars:
+            env.update(envvars)
+
+        with tempfile.NamedTemporaryFile() as logfile:
+            proc = subprocess.Popen(cmd,
+                                    cwd=setup_cwd,
+                                    close_fds=True,
+                                    stdin=subprocess.PIPE,
+                                    stdout=logfile,
+                                    stderr=subprocess.STDOUT,
+                                    env=env)
+            proc.stdin.close()
+            rv = proc.wait()
+
+            if rv != 0 and raise_on_fail:
+                logfile.seek(0, os.SEEK_SET)
+                print(logfile.read())
+                msg = ("%s failed with exit code %d. Source files have been" +
+                       " left in %r for you to examine.\nCommand line was: %s") % (
+                           step, rv, setup_cwd, cmd)
+                raise PBundlerException(msg)
