@@ -117,7 +117,7 @@ class CheesefileContext(object):
         yield
         self.current_group = 'default'
 
-    def cheese(self, name, version=None, platform=None, path=None):
+    def req(self, name, version=None, platform=None, path=None):
         self.groups[self.current_group].append(
             Cheese(name, version, platform, path)
             )
@@ -141,7 +141,7 @@ class Cheesefile(object):
             f.write("\n")
             f.write("source(\"pypi\")\n")
             f.write("\n")
-            f.write("# cheese(\"Flask\")\n")
+            f.write("# req(\"Flask\")\n")
             f.write("\n")
 
     def parse(self):

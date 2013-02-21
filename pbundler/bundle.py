@@ -135,6 +135,7 @@ class Bundle:
     def _write_cheesefile_lock(self):
         # TODO: file format is wrong. at least we must consider groups,
         # and we shouldn't rewrite the entire file (think groups, platforms).
+        # TODO: write source to lockfile.
         with file(os.path.join(self.path, CHEESEFILE_LOCK), 'wt') as lockfile:
             for name in sorted(self.required.keys()):
                 # ignore ourselves and our dependencies (which should
@@ -142,7 +143,7 @@ class Bundle:
                 if name in ['pbundler', 'distribute']:
                     continue
                 pkg = self.required[name]
-                lockfile.write("cheese(%r, %r, path=%r)\n" % (pkg.name, pkg.exact_version, pkg.path))
+                lockfile.write("req(%r, %r, path=%r)\n" % (pkg.name, pkg.exact_version, pkg.path))
 
     def _check_sys_modules_is_clean(self):
         # TODO: Possibly remove this when resolver/activation development is done.

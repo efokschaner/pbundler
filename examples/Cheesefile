@@ -1,11 +1,15 @@
+
 source("pypi")
+#source("http://localserver/")
 
-cheese("Flask")
-cheese("psycopg2")
-cheese("Pillow")
+req("Flask", ">0.1")
+req("psycopg2")
+req("Pillow")
 
-with group("development"):
-    cheese("nose")
+#git("meinpaket", source="git://...", rev="HEAD")
 
-# cheese("pbundler", path='~/Source/pbundler')
-cheese("ipython")
+#with group("development"):
+#    req("nose")
+
+#req("pbundler", path='~/Source/pbundler')
+req("ipython")
