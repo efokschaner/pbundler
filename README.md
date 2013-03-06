@@ -1,90 +1,72 @@
 Python Bundler
 ==============
 
-Simplifies virtualenv and pip usage.
-
-Aims to be compatible with all existing projects already carrying a "requirements.txt" in their source.
+The easiest way to manage your Python application's dependencies.
 
 Inspired by http://gembundler.com/
 
-Howto
------
 
-* easy\_install pbundler
-* cd into your project path
-* Run pbundle. It will install your project's dependencies into a fresh virtualenv.
+Quickstart
+----------
 
-To run commands with the activated virtualenv:
+Managing dependencies with pbundler is easy. Install pbundler on your machine:
 
-    pbundle run bash -c 'echo "I am activated. virtualenv: $VIRTUAL_ENV"'
+    $ easy_install pbundler
 
 
-Or, for python programs:
+Then, in your project root, specify the dependencies:
 
-    pbundle py ./debug.py
+    $ pbundle init
+    $ vim Cheesefile
 
+Example Cheesefile:
 
-If you don't have a requirements.txt yet but have an existing project, try this:
-
-    pip freeze > requirements.txt
-
-
-If you start fresh, try this for a project setup:
-
-    mkdir myproject && cd myproject
-    git init
-    pbundle init
+```python
+source("pypi")
+req("Pillow")
+req("Flask", ">=0.8")
+```
 
 
-Instructions you can give your users:
+Now install all your dependencies:
 
-    git clone git://github.com/you/yourproject.git
-    easy_install pbundler
-    pbundle
-
-
-If you rather like pip, and you're sure your users already have pip:
-
-    git clone git://github.com/you/yourproject.git
-    pip install pbundler
-    pbundle
+    $ pbundle install
+    $ git add Cheesefile Cheesefile.lock
 
 
+Inside your app, load the environment:
 
-Making python scripts automatically use pbundle py
---------------------------------------------------
+```python
+import pbundler
+pbundler.PBundler.setup()
 
-Replace the shebang with "/usr/bin/env pbundle-py". Example:
-
-    #!/usr/bin/env pbundle-py
-    import sys
-    print sys.path
-
-
-WSGI/Unicorn example
---------------------
-
-start-unicorn.sh:
-
-    #!/bin/bash
-    cd /srv/app/flaskr
-    PYTHONPATH=/srv/app/wsgi exec pbundle run gunicorn -w 5 -b 127.0.0.1:4000 -n flaskrprod flaskr:app
+# import your dependencies as usual
+import Flask
+```
 
 
-Custom environment variables
-----------------------------
+Run a commands with the activated packages:
 
-If you need to set custom ENV variables for the executed commands in your local copy, do this:
+    $ pbundle exec ./server.py
 
-    echo "DJANGO_SETTINGS_MODULE='mysite.settings'" >> .pbundle/environment.py
+
+Or, to get a Python shell:
+
+    $ pbundle console
+
+(If you have IPython in your Cheesefile, it will be an IPython shell.)
+
+
+Instructions for your users
+---------------------------
+
+
+    $ git clone git://github.com/you/yourproject.git && cd yourproject
+    $ easy_install pbundler
+    $ pbundle
 
 
 TODO
 ----
 
-* Build inventory from what is installed, instead of requirements.last file
-* Handle failed egg installs
-* Really remove all no longer needed packages from virtualenv
-* Get rid of os.system
-* Reorganize library code
-
+* Lots of things!

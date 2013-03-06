@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import pbundler
 pbundler.PBundler.setup()
 import sys
