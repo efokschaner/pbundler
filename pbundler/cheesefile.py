@@ -142,7 +142,7 @@ class CheesefileContext(object):
 
     def source(self, name_or_url):
         if name_or_url == 'pypi':
-            name_or_url = 'http://pypi.python.org/pypi'
+            name_or_url = 'https://pypi.python.org/pypi'
 
         self.sources.append(CheeseshopSource(name_or_url))
 

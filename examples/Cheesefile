@@ -1,6 +1,6 @@
 
 source("pypi")
-#source("http://localserver/")
+#source("https://localserver/")
 
 req("Flask", ">0.1")
 req("psycopg2")

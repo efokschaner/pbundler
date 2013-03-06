@@ -27,7 +27,7 @@ setup(
     description="Bundler for Python",
     license="MIT",
     keywords="bundler bundle pbundler pbundle dependency dependencies management virtualenv pip packages",
-    url="http://github.com/zeha/pbundler/",
+    url="https://github.com/zeha/pbundler/",
     download_url="https://github.com/zeha/pbundler/downloads",
     **extra
 )

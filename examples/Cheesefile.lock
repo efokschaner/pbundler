@@ -5,7 +5,7 @@ with Cheesefile():
     req('Pillow', None, path=None)
     pass
 
-with from_source('http://pypi.python.org/pypi'):
+with from_source('https://pypi.python.org/pypi'):
     with resolved_req('Flask', '0.9'):
         req('Werkzeug', '>=0.7')
         req('Jinja2', '>=2.4')
