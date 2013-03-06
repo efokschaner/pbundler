@@ -23,8 +23,8 @@ Example Cheesefile:
 
 ```python
 source("pypi")
-req("Pillow")
-req("Flask", ">=0.8")
+pkg("Pillow")
+pkg("Flask", ">=0.8")
 ```
 
 

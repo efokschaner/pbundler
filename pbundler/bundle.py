@@ -190,7 +190,7 @@ class Bundle:
             indent = ' '*4
             lockfile.write("with Cheesefile():\n")
             for pkg in self.cheesefile.collect(['default'], self.current_platform).itervalues():
-                lockfile.write(indent+"req(%r, %r, path=%r)\n" % (pkg.name, pkg.orig_version_req, pkg.path))
+                lockfile.write(indent+"pkg(%r, %r, path=%r)\n" % (pkg.name, pkg.orig_version_req, pkg.path))
             lockfile.write(indent+"pass\n")
             lockfile.write("\n")
 
@@ -205,9 +205,9 @@ class Bundle:
                     #print(name, pkg, pkg.source)
                     if pkg.source.url != source.url:
                         continue
-                    lockfile.write(indent+"with resolved_req(%r, %r):\n" % (pkg.name, pkg.exact_version))
+                    lockfile.write(indent+"with resolved_pkg(%r, %r):\n" % (pkg.name, pkg.exact_version))
                     for dep in pkg.requirements:
-                        lockfile.write(indent+indent+"req(%r, %r)\n" % (dep.name, dep.version_req))
+                        lockfile.write(indent+indent+"pkg(%r, %r)\n" % (dep.name, dep.version_req))
                     lockfile.write(indent+indent+"pass\n")
                 lockfile.write(indent+"pass\n")
 

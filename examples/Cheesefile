@@ -2,14 +2,14 @@
 source("pypi")
 #source("https://localserver/")
 
-req("Flask", ">0.1")
-req("psycopg2")
-req("Pillow")
+pkg("Flask", ">0.1")
+pkg("psycopg2")
+pkg("Pillow")
 
 #git("meinpaket", source="git://...", rev="HEAD")
 
 #with group("development"):
-#    req("nose")
+#    pkg("nose")
 
-#req("pbundler", path='~/Source/pbundler')
-req("ipython")
+#pkg("pbundler", path='~/Source/pbundler')
+pkg("ipython")

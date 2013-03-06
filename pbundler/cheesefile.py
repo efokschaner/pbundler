@@ -153,7 +153,7 @@ class CheesefileContext(object):
         yield
         self.current_group = 'default'
 
-    def req(self, name, version=None, platform=None, path=None):
+    def pkg(self, name, version=None, platform=None, path=None):
         self.groups[self.current_group].append(
             Cheese(name, version, platform, path)
             )
@@ -177,7 +177,7 @@ class Cheesefile(object):
             f.write("\n")
             f.write("source(\"pypi\")\n")
             f.write("\n")
-            f.write("# req(\"Flask\")\n")
+            f.write("# pkg(\"Flask\")\n")
             f.write("\n")
 
     def parse(self):
@@ -217,12 +217,12 @@ class CheesefileLockContext(object):
         yield
         self.current_req_context = None
 
-    def req(self, name, version, platform=None, path=None):
+    def pkg(self, name, version, platform=None, path=None):
         req = Cheese(name, version, platform, path)
         self.current_req_context.append(req)
 
     @contextmanager
-    def resolved_req(self, name, version):
+    def resolved_pkg(self, name, version):
         prev_req_context = self.current_req_context
         solved_req = Cheese(name, version)
         self.current_req_context = solved_req.requirements_setter()
