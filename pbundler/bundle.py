@@ -54,11 +54,11 @@ class Bundle:
 
     def _add_new_dep(self, dep):
         cheese = Cheese.from_requirement(dep)
-        existing = self.required.get(cheese.name)
+        existing = self.required.get(cheese.key)
         if existing:
             # FIXME: check if we're compatible
             return None
-        self.required[cheese.name] = cheese
+        self.required[cheese.key] = cheese
         return cheese
 
     def _resolve_deps(self):
@@ -94,6 +94,7 @@ class Bundle:
                 req = pkg.requirement()
                 for source in self.cheesefile.sources:
                     print("Querying", repr(source.url), "for", repr(pkg.name))
+                    pkg.name = source.canonical_name(pkg)
                     for version in source.available_versions(pkg):
                         if version in req:
                             pkg.use_from(version, source)
@@ -207,7 +208,8 @@ class Bundle:
                         continue
                     lockfile.write(indent+"with resolved_pkg(%r, %r):\n" % (pkg.name, pkg.exact_version))
                     for dep in pkg.requirements:
-                        lockfile.write(indent+indent+"pkg(%r, %r)\n" % (dep.name, dep.version_req))
+                        name = source.canonical_name(dep)
+                        lockfile.write(indent+indent+"pkg(%r, %r)\n" % (name, dep.version_req))
                     lockfile.write(indent+indent+"pass\n")
                 lockfile.write(indent+"pass\n")
 
@@ -269,4 +271,4 @@ class Bundle:
 
     def get_cheese(self, name, default=None):
         self.load_cheese()
-        return self.required.get(name, default)
+        return self.required.get(name.upper(), default)

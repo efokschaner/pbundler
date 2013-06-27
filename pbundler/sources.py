@@ -13,6 +13,7 @@ import xmlrpclib
 from . import PBundlerException
 from .util import PBFile, PBDownloader
 
+_canonical_name_cache = {}
 
 class CheeseshopSource(object):
 
@@ -31,6 +32,21 @@ class CheeseshopSource(object):
     def requires(self, cheese):
         d = self._src().release_data(cheese.name, cheese.exact_version)
         return d["requires"]
+
+    def canonical_name(self, cheese):
+        if _canonical_name_cache.get(cheese.key):
+            return _canonical_name_cache[cheese.key]
+        versions = self._src().package_releases(cheese.name, True)
+        if len(versions) > 0:
+            _canonical_name_cache[cheese.key] = cheese.name
+            return cheese.name
+        results = self._src().search({'name': [cheese.name]})
+        if len(results) == 1:
+            name = results[0]['name']
+            if name.upper() == cheese.name.upper():
+                _canonical_name_cache[cheese.key] = name
+                return name
+        return cheese.name
 
     def download(self, cheese, target_path):
         urls = self._src().release_urls(cheese.name, cheese.exact_version)
@@ -67,3 +83,6 @@ class FilesystemSource(object):
     def get_distribution(self, cheese):
         dists = pkg_resources.find_distributions(self.path, only=True)
         return [dist for dist in dists][0]
+
+    def canonical_name(self, cheese):
+        return cheese.name

@@ -110,6 +110,11 @@ class Cheese(object):
         self._requirements = []
         return self._requirements
 
+    @property
+    def key(self):
+        """Used as the lookup key in require (and other Cheese collections)."""
+        return self.name.upper()
+
 
 class CheesefileContext(object):
     """DSL Context class. All methods not starting with an underscore
@@ -192,7 +197,7 @@ class Cheesefile(object):
         for pkgs in groups:
             for pkg in pkgs:
                 if pkg.applies_to(platform):
-                    collection[pkg.name] = pkg
+                    collection[pkg.key] = pkg
         return collection
 
 
@@ -266,6 +271,4 @@ class CheesefileLock(object):
 
     def to_required(self):
         pkgs = [item for pkgs in self.from_source_data.itervalues() for item in pkgs]
-        #for pkg in pkgs:
-        #    print(pkg.name, pkg.version_req)
-        return dict(zip([pkg.name for pkg in pkgs], pkgs))
+        return dict(zip([pkg.key for pkg in pkgs], pkgs))
