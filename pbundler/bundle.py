@@ -140,7 +140,6 @@ class Bundle:
             #print(repr(self.required))
             #print(repr(self.cheesefile_lock.cheesefile_data))
             if self.cheesefile_lock.matches_cheesefile(self.cheesefile):
-                #print("Cheesefile.lock matches")
                 self.required = self.cheesefile_lock.to_required()
                 self.resolve_changes_allowed = False
             else:
@@ -233,7 +232,6 @@ class Bundle:
 
     def load_cheese(self):
         if getattr(self, 'required', None) is None:
-            # while we don't have a lockfile reader:
             self.install(['default'])
             #raise PBundlerException("Your bundle is not installed.")
 

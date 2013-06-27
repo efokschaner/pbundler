@@ -85,6 +85,8 @@ class Cheese(object):
 
     def use_dist(self, dist):
         self.dist = dist
+        #print(self.dist)
+        #self.name = dist.safe_name()
 
     def requirement(self):
         """Return pkg_resources.Requirement matching this object."""
@@ -256,16 +258,12 @@ class CheesefileLock(object):
 
     def matches_cheesefile(self, cheesefile):
         flat_reqs = [item for pkgs in cheesefile.groups.values() for item in pkgs]
-        #print("flat_reqs:", repr(flat_reqs))
-        #print("", repr([pkg.name for pkg in flat_reqs]))
-        #print("pkg_names:", [pkg.name for pkg in self.cheesefile_data])
         if sorted([pkg.name for pkg in flat_reqs]) != sorted([pkg.name for pkg in self.cheesefile_data]):
-            #print("pkg names mismatch")
+            # pkg names mismatch
             return False
         for their_pkg in flat_reqs:
             our_pkg = [pkg for pkg in self.cheesefile_data if pkg.name == their_pkg.name][0]
             if their_pkg.version_req != our_pkg.version_req:
-                #print(their_pkg.name, their_pkg.version_req, our_pkg.version_req, "mismatch")
                 return False
         return True
 
