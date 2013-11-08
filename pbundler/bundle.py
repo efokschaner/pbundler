@@ -73,7 +73,7 @@ class Bundle:
                 if len(available_versions) == 0:
                     raise PBundlerException("Package %s is not available in %r" % (pkg.name, pkg.path))
                 if len(available_versions) != 1:
-                    raise PBundlerException("Package %s has multiple versions in %r" % (pgk.name, pkg.path))
+                    raise PBundlerException("Package %s has multiple versions in %r" % (pkg.name, pkg.path))
 
                 version = available_versions[0]
                 pkg.use_from(version, source)
