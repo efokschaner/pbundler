@@ -4,7 +4,6 @@ from __future__ import absolute_import
 __all__ = ['Cheesefile', 'Cheese', 'CHEESEFILE', 'CHEESEFILE_LOCK']
 
 import os
-import shlex
 from contextlib import contextmanager
 import pkg_resources
 

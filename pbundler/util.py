@@ -5,7 +5,7 @@ __all__ = ['PBFile', 'PBDownloader', 'PBArchive']
 
 import os
 from hashlib import md5
-from urllib2 import Request, urlopen, HTTPError
+from urllib2 import Request, urlopen
 import subprocess
 import shutil
 import pkg_resources
