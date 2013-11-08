@@ -16,7 +16,7 @@ Howto
 
 To run commands with the activated virtualenv:
 
-    pbundle run bash -c 'echo "I am activated. virtualenv: $VIRTUAL_ENV"'
+    pbundle exec bash -c 'echo "I am activated. virtualenv: $VIRTUAL_ENV"'
 
 
 Or, for python programs:
@@ -68,7 +68,7 @@ start-unicorn.sh:
 
     #!/bin/bash
     cd /srv/app/flaskr
-    PYTHONPATH=/srv/app/wsgi exec pbundle run gunicorn -w 5 -b 127.0.0.1:4000 -n flaskrprod flaskr:app
+    PYTHONPATH=/srv/app/wsgi exec pbundle exec gunicorn -w 5 -b 127.0.0.1:4000 -n flaskrprod flaskr:app
 
 
 Custom environment variables
@@ -85,6 +85,5 @@ TODO
 * Build inventory from what is installed, instead of requirements.last file
 * Handle failed egg installs
 * Really remove all no longer needed packages from virtualenv
-* Get rid of os.system
 * Reorganize library code
 
