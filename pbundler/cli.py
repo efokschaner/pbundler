@@ -126,5 +126,5 @@ def pbcli():
 
 
 def pbpy():
-    argv = [sys.argv[0], "exec"] + sys.argv[1:]
+    argv = [sys.argv[0], "console", "--plain", "--"] + sys.argv[1:]
     sys.exit(PBCli().run(argv))
