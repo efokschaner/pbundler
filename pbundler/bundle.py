@@ -5,16 +5,12 @@ __all__ = ['Bundle']
 
 import os
 import sys
-import time
-import traceback
-import subprocess
-import pkg_resources
 
 from . import PBundlerException
 from .util import PBFile
 from .pypath import PyPath
 from .cheesefile import Cheesefile, CheesefileLock, Cheese, CHEESEFILE, CHEESEFILE_LOCK
-from .sources import CheeseshopSource, FilesystemSource
+from .sources import FilesystemSource
 from .localstore import LocalStore
 
 

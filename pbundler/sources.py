@@ -4,14 +4,11 @@ from __future__ import absolute_import
 __all__ = ['CheeseshopSource']
 
 import os
-import shlex
-from contextlib import contextmanager
 import pkg_resources
-from urllib2 import urlopen
 import xmlrpclib
 
 from . import PBundlerException
-from .util import PBFile, PBDownloader
+from .util import PBDownloader
 
 
 class CheeseshopSource(object):
