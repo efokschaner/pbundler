@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 import sys
 
 extra = {
-    'install_requires': ['distribute']
+    'install_requires': ['distribute', 'pip']
 }
 
 if sys.version_info >= (3,):

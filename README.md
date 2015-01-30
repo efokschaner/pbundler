@@ -1,18 +1,29 @@
 Python Bundler
 ==============
 
+_Python Bundler is to Python, as Bundler is to Ruby_
+
 Simplifies virtualenv and pip usage.
 
-Aims to be compatible with all existing projects already carrying a "requirements.txt" in their source.
+No need to rewrite your `requirements.txt` when starting out.
 
-Inspired by http://gembundler.com/
+Inspired by http://bundler.io/
 
 Howto
 -----
+### For projects that are not using pbundle (yet)
+* `easy_install pbundler` or `pip install pbundler`
+* `cd` into your project path
+* `pbundle init`
 
-* easy\_install pbundler
+Already have a `requirements.txt`?
+* `echo "pipspec()" >> ./Cheesefile`
+
+
+### For projects already using pbundle
+* `easy_install pbundler` or `pip install pbundler`
 * cd into your project path
-* Run pbundle. It will install your project's dependencies into a fresh virtualenv.
+* `pbundle` It will install your project's dependencies into a fresh virtualenv.
 
 To run commands with the activated virtualenv:
 
@@ -27,6 +38,7 @@ Or, for python programs:
 If you don't have a requirements.txt yet but have an existing project, try this:
 
     pip freeze > requirements.txt
+    echo "pipspec()" >> ./Cheesefile
 
 
 If you start fresh, try this for a project setup:

@@ -7,7 +7,9 @@ import os
 import sys
 import traceback
 
-import pbundler
+from .bundle import Bundle
+from .exceptions import PBundlerException
+from .cheesefile import Cheesefile
 
 
 USAGE = """
@@ -36,7 +38,7 @@ class PBCli():
     @property
     def bundle(self):
         if not self._bundle:
-            self._bundle = pbundler.PBundler.load_bundle()
+            self._bundle = Bundle.load()
         return self._bundle
 
     def handle_args(self, argv):
@@ -51,13 +53,13 @@ class PBCli():
         if 'cmd_' + command in PBCli.__dict__:
             return PBCli.__dict__['cmd_' + command](self, args)
         else:
-            raise pbundler.PBundlerException("Could not find command \"%s\"." %
+            raise PBundlerException("Could not find command \"%s\"." %
                                              (command,))
 
     def run(self, argv):
         try:
             return self.handle_args(argv)
-        except pbundler.PBundlerException as ex:
+        except PBundlerException as ex:
             print("E:", str(ex))
             return 1
         except Exception as ex:
@@ -73,7 +75,7 @@ class PBCli():
         path = os.getcwd()
         if len(args) > 0:
             path = os.path.abspath(args[0])
-        pbundler.cheesefile.Cheesefile.generate_empty_file(path)
+        Cheesefile.generate_empty_file(path)
 
     def cmd_install(self, args):
         self.bundle.install(['default'])
@@ -111,8 +113,8 @@ class PBCli():
 
     def cmd_repl(self, args):
         #self.bundle.validate_requirements()
-        import pbundler.repl
-        pbundler.repl.run()
+        from .repl import run as run_repl
+        run_repl()
 
     def cmd_version(self, args):
         import pkg_resources

@@ -7,6 +7,8 @@ import os
 from contextlib import contextmanager
 import pkg_resources
 
+from pip.req import parse_requirements
+
 from . import PBundlerException
 from .dsl import DslRunner
 from .sources import CheeseshopSource
@@ -29,6 +31,7 @@ class Cheese(object):
         self.source = source
         self.dist = None
         self._requirements = None
+        self.key = self.name.lower()
 
     @classmethod
     def from_requirement(cls, req):
@@ -86,9 +89,11 @@ class CheesefileContext(object):
     """DSL Context class. All methods not starting with an underscore
     are exposed to the Cheesefile."""
 
-    def __init__(self):
+    def __init__(self, path):
+        self.path = path
         self.sources = []
         self.groups = {}
+
         with self.group('default'):
             pass
 
@@ -129,6 +134,15 @@ class CheesefileContext(object):
             Cheese(name, version, platform, path)
             )
 
+    def pipspec(self, path_to_requirements_txt=None):
+        if path_to_requirements_txt is None:
+            non_default_path = 'requirements.txt'
+        else:
+            non_default_path = path_to_requirements_txt
+        abs_path = os.path.join(os.path.dirname(self.path), non_default_path)
+        for requirement in parse_requirements(abs_path):
+            self.groups[self.current_group].append(Cheese.from_requirement(requirement.req))
+
 
 class Cheesefile(object):
     """Parses and holds Cheesefiles."""
@@ -144,15 +158,20 @@ class Cheesefile(object):
                                     (CHEESEFILE,))
         print("Writing new %s to %s" % (CHEESEFILE, filepath))
         with open(filepath, "w") as f:
-            f.write("# PBundler Cheesefile\n")
-            f.write("\n")
-            f.write("source(\"pypi\")\n")
-            f.write("\n")
-            f.write("# req(\"Flask\")\n")
-            f.write("\n")
+            f.write("""# PBundler Cheesefile
+source('pypi')
+
+# req('Flask')
+
+# import an existing requirements.txt in the same directory as this Cheesefile
+# pipspec()
+
+# import any requirements.txt file
+# pipspec(<path relative to the directory of this Cheesefile>)
+""")
 
     def parse(self):
-        runner = DslRunner(CheesefileContext)
+        runner = DslRunner(lambda: CheesefileContext(self.path))
         ctx = runner.execfile(self.path)
         for attr, val in ctx.__dict__.items():
             self.__setattr__(attr, val)
@@ -163,7 +182,7 @@ class Cheesefile(object):
         for pkgs in groups:
             for pkg in pkgs:
                 if pkg.applies_to(platform):
-                    collection[pkg.name] = pkg
+                    collection[pkg.key] = pkg
         return collection
 
 

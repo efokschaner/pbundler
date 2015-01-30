@@ -9,6 +9,8 @@ from urllib2 import Request, urlopen
 import subprocess
 import shutil
 import pkg_resources
+import zipfile
+import tarfile
 
 from . import PBundlerException
 
@@ -107,8 +109,9 @@ class PBArchive(object):
         if os.path.exists(destination):
             shutil.rmtree(destination)
         PBFile.ensure_dir(destination)
-        # FIXME: implement this stuff in pure python
         if self.filetype == 'zip':
-            subprocess.call(['unzip', '-q', self.path, '-d', destination])
+            with zipfile.ZipFile(self.path, 'r') as archive:
+                archive.extractall(destination)
         elif self.filetype == 'tar':
-            subprocess.call(['tar', 'xf', self.path, '-C', destination])
+            with tarfile.open(self.path, 'r') as archive:
+                archive.extractall(destination)

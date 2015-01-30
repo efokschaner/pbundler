@@ -50,11 +50,11 @@ class Bundle:
 
     def _add_new_dep(self, dep):
         cheese = Cheese.from_requirement(dep)
-        existing = self.required.get(cheese.name)
+        existing = self.required.get(cheese.key)
         if existing:
             # FIXME: check if we're compatible
             return None
-        self.required[cheese.name] = cheese
+        self.required[cheese.key] = cheese
         return cheese
 
     def _resolve_deps(self):
@@ -139,9 +139,11 @@ class Bundle:
         with file(os.path.join(self.path, CHEESEFILE_LOCK), 'wt') as lockfile:
             indent = ' '*4
             lockfile.write("with Cheesefile():\n")
-            for pkg in self.cheesefile.collect(['default'], self.current_platform).itervalues():
+            packages = self.cheesefile.collect(['default'], self.current_platform)
+            for pkg in packages.itervalues():
                 lockfile.write(indent+"req(%r, %r, path=%r)\n" % (pkg.name, pkg.exact_version, pkg.path))
-            lockfile.write(indent+"pass\n")
+            if not packages:
+                lockfile.write(indent+"pass\n")
             lockfile.write("\n")
 
             for source in self.cheesefile.sources:
@@ -156,8 +158,10 @@ class Bundle:
                     lockfile.write(indent+"with resolved_req(%r, %r):\n" % (pkg.name, pkg.exact_version))
                     for dep in pkg.requirements:
                         lockfile.write(indent+indent+"req(%r, %r)\n" % (dep.name, dep.version_req))
-                    lockfile.write(indent+indent+"pass\n")
-                lockfile.write(indent+"pass\n")
+                    if not pkg.requirements:
+                        lockfile.write(indent+indent+"pass\n")
+                if not self.cheesefile.sources:
+                    lockfile.write(indent+"pass\n")
 
     def _check_sys_modules_is_clean(self):
         # TODO: Possibly remove this when resolver/activation development is done.

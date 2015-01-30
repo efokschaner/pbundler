@@ -127,7 +127,7 @@ class UnpackedSdist(object):
         with tempfile.NamedTemporaryFile() as logfile:
             proc = subprocess.Popen(cmd,
                                     cwd=setup_cwd,
-                                    close_fds=True,
+                                    close_fds=(sys.platform != 'win32'),
                                     stdin=subprocess.PIPE,
                                     stdout=logfile,
                                     stderr=subprocess.STDOUT,

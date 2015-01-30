@@ -27,3 +27,4 @@ class PBundler(object):
             groups = 'default'
         bundle.enable(groups)
         return bundle
+
